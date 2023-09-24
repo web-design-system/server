@@ -1,25 +1,25 @@
 {
-  "name": "@cloud-cli/",
+  "name": "@web-design-system/server",
   "version": "0.0.0",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "type": "module",
+  "main": "./src/index.mjs",
   "scripts": {
-    "build": "tsc",
-    "test": "jest",
-    "tdd": "jest --watchAll"
+    "build": "npm run presets && npm run tw",
+    "presets": "node src/presets.mjs",
+    "tw": "PRESET=default tailwindcss -i ./src/tailwind.css -o ./dist/default.css",
+    "test": "echo true"
   },
   "prettier": "@cloud-cli/prettier-config",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cloud-cli/.git"
+    "url": "https://github.com/web-design-system/server.git"
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@cloud-cli/prettier-config": "^1.0.0",
-    "@cloud-cli/jest-config": "^1.0.0",
-    "@cloud-cli/typescript-config": "^1.0.0"
+    "@cloud-cli/prettier-config": "^1.0.0"
+  },
+  "dependencies": {
+    "tailwindcss": "^2.2.19"
   }
 }

@@ -15,11 +15,11 @@ xl: 200%
 `;
 
 export const shades = `
-darkest:    0%
+darkest:    -75%
 dark:       -25%
 DEFAULT:    100%
 light:      25%
-lightest:   100%
+lightest:   75%
 `;
 
 export const colors = `

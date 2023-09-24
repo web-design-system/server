@@ -6,13 +6,6 @@ export default {
     "lg": "150%",
     "xl": "200%"
   },
-  "shades": {
-    "darkest": "0%",
-    "dark": "-25%",
-    "DEFAULT": "100%",
-    "light": "25%",
-    "lightest": "100%"
-  },
   "colors": {
     "white": "#fff",
     "black": "#000",

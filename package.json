@@ -5,7 +5,7 @@
   "scripts": {
     "build": "npm run presets && npm run tw",
     "presets": "node src/presets.mjs",
-    "tw": "PRESET=default tailwindcss -i ./src/tailwind.css -o ./dist/default.css",
+    "tw": "PRESET=default tailwindcss -i ./src/tailwind.css -o ./presets/default.css",
     "test": "echo true"
   },
   "prettier": "@cloud-cli/prettier-config",

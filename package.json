@@ -2,7 +2,7 @@
   "name": "@web-design-system/server",
   "private": true,
   "version": "0.0.0",
-  "main": "./src/index.mjs",
+  "main": "./server/index.mjs",
   "scripts": {
     "ci": "rm presets/* && npm run build",
     "build": "npm run presets && npm run compile",

@@ -8,4 +8,5 @@ jobs:
     uses: cloud-cli/workflows/.github/workflows/docker-ghcr-build.yml@main
     with:
       name: web-design-system/server
+      baseImage: cloud-cli/node:latest
       type: node

@@ -1,4 +1,3 @@
-export const unit = '10px';
 export const devices = `
 phone: 640px
 tablet: 768px
@@ -34,7 +33,7 @@ info:       #60a5fa
 success:    #10b981
 `;
 
-export const gaps = `
+export const spacing = `
 0:    0
 1:    0.25rem
 2:    0.5rem
@@ -56,12 +55,74 @@ lg:       0.5rem
 full:     9999px
 `;
 
+export const plugins = [
+  'preflight',
+  'container',
+  'alignContent',
+  'alignItems',
+  'alignSelf',
+  'animation',
+  'backgroundColor',
+  'blur',
+  'borderColor',
+  'borderRadius',
+  'borderStyle',
+  'borderWidth',
+  'boxShadow',
+  'display',
+  'flex',
+  'flexDirection',
+  'flexGrow',
+  'flexShrink',
+  'flexWrap',
+  'float',
+  'fontFamily',
+  'fontSize',
+  'fontStyle',
+  'fontWeight',
+  'gap',
+  'grayscale',
+  'gridColumn',
+  'gridColumnEnd',
+  'gridColumnStart',
+  'gridRow',
+  'gridRowEnd',
+  'gridRowStart',
+  'gridTemplateColumns',
+  'gridTemplateRows',
+  'height',
+  'justifyContent',
+  'justifyItems',
+  'justifySelf',
+  'lineHeight',
+  'margin',
+  'minHeight',
+  'minWidth',
+  'overflow',
+  'padding',
+  'position',
+  'ringColor',
+  'ringOffsetColor',
+  'ringOffsetWidth',
+  'ringOpacity',
+  'ringWidth',
+  'textAlign',
+  'textColor',
+  'textDecoration',
+  'textOverflow',
+  'visibility',
+  'whitespace',
+  'width',
+  'zIndex',
+];
+
 export const components = {
-  btn: {
-    apply: 'px-4 py-2 mb-4 flex border rounded-lg',
+  'btn-primary': {
+    apply: 'flex border rounded-lg',
+    variants: ['responsive', 'hover'],
     parts: {
       icon: 'w-16 h-16',
-      label: 'px-2',
+      label: 'p-2',
     },
   },
 };

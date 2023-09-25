@@ -22,15 +22,16 @@ lightest:   75%
 `;
 
 export const colors = `
-white:      #fff
-black:      #000
-gray:       #333
-primary:    #0af
-secondary:  #f98
-danger:     #ee4444
-warning:    #fbbf24
-info:       #60a5fa
-success:    #10b981
+white:              #fff
+black:              #000
+gray:               #333
+primary:            #0d6efd
+primary-light:      #3585fd
+secondary:          #6c757d
+danger:             #ee4444
+warning:            #fbbf24
+info:               #60a5fa
+success:            #10b981
 `;
 
 export const spacing = `
@@ -81,7 +82,6 @@ export const plugins = [
   'fontStyle',
   'fontWeight',
   'gap',
-  'grayscale',
   'gridColumn',
   'gridColumnEnd',
   'gridColumnStart',
@@ -99,6 +99,7 @@ export const plugins = [
   'minHeight',
   'minWidth',
   'overflow',
+  'outline',
   'padding',
   'position',
   'ringColor',
@@ -118,11 +119,12 @@ export const plugins = [
 
 export const components = {
   'btn-primary': {
-    apply: 'flex border rounded-lg',
+    apply: 'relative py-2 px-4 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75 flex',
     variants: ['responsive', 'hover'],
     parts: {
-      icon: 'w-16 h-16',
-      label: 'p-2',
+      icon: 'w-16 h-16 p-1',
+      label: 'px-2',
+      badge: 'absolute top-0 right-0 rounded-full bg-danger w-8 h-8 -m-4'
     },
   },
 };

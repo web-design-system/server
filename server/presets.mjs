@@ -1,4 +1,5 @@
-import { readdir, writeFile } from 'node:fs/promises';
+import { unlink, writeFile } from 'node:fs/promises';
+import { spawnSync as sh } from 'node:child_process';
 
 const commentSeparator = '//';
 const definitionSeparator = ':';
@@ -92,37 +93,31 @@ const defaultPlugins = [
   'zIndex',
 ];
 
-async function main() {
-  const systemsDir = process.cwd() + '/systems/';
-  const systems = await readdir(systemsDir);
-
-  for (const next of systems) {
-    const definitions = await import(systemsDir + next);
-    const name = next.replace('.mjs', '');
-    generatePreset(name, { ...definitions });
-  }
-}
-
 function transformText(input) {
   if (!input) return undefined;
 
-  return input
-    .trim()
-    .split('\n')
-    .filter(Boolean)
-    .map((line) => {
-      const [left, right] = line.split(definitionSeparator);
-      const [value] = right.split(commentSeparator);
-      return [left, value].map((s) => s.trim());
-    })
-    .reduce((all, next) => {
-      all[next[0]] = next[1];
-      return all;
-    }, {});
+  const source =
+    typeof input === 'string'
+      ? input
+          .trim()
+          .split('\n')
+          .filter(Boolean)
+          .map((line) => {
+            const [left, right] = line.split(definitionSeparator);
+            const [value] = right.split(commentSeparator);
+            return [left, value];
+          })
+      : Object.entries(input);
+
+  return source.reduce((all, next) => {
+    all[next[0].trim()] = next[1].trim();
+    return all;
+  }, {});
 }
 
 function parseDefinitions(definitions) {
   const { prefix, sizes, colors, gaps, devices, radius, components, plugins } = definitions;
+
   return {
     sizes: transformText(sizes),
     colors: transformText(colors),
@@ -133,34 +128,6 @@ function parseDefinitions(definitions) {
     plugins,
     prefix,
   };
-}
-
-function generatePreset(name, definitions) {
-  const presetsDir = process.cwd() + '/presets/';
-  const { borderRadius, colors, devices, sizes, spacing, components, plugins } = parseDefinitions(definitions);
-
-  const source = {
-    // presets: [],
-    theme: {
-      screens: generateScreens(devices),
-      colors: {
-        transparent: 'transparent',
-        current: 'currentColor',
-        ...generateColors(colors),
-      },
-      borderRadius,
-      spacing,
-    },
-    corePlugins: plugins || defaultPlugins,
-  };
-
-  const preset = 'module.exports = ' + JSON.stringify(source, null, 2);
-  const json = 'export default ' + JSON.stringify({ sizes, colors, spacing, devices }, null, 2);
-  const css = generateCssTemplate(components);
-
-  writeFile(presetsDir + name + '.cjs', preset);
-  writeFile(presetsDir + name + '.mjs', json);
-  writeFile(presetsDir + name + '.tpl.css', css);
 }
 
 function generateScreens(devices) {
@@ -215,4 +182,46 @@ ${componentDefinitions}
   return css;
 }
 
-main();
+export function generateConfig(definitions) {
+  const { borderRadius, colors, devices, spacing, plugins } = definitions;
+
+  const source = {
+    // presets: [],
+    theme: {
+      screens: generateScreens(devices),
+      colors: {
+        transparent: 'transparent',
+        current: 'currentColor',
+        ...generateColors(colors),
+      },
+      borderRadius,
+      spacing,
+    },
+    corePlugins: plugins || defaultPlugins,
+  };
+
+  return source;
+}
+
+export async function generatePreset(name, definitions) {
+  const parsed = parseDefinitions(definitions);
+  const source = generateConfig(parsed);
+  const { sizes, components, colors, spacing, devices } = parsed;
+  const presetsDir = process.cwd() + '/presets/';
+  const preset = 'module.exports = ' + JSON.stringify(source, null, 2);
+  const json = 'export default ' + JSON.stringify({ sizes, colors, spacing, devices }, null, 2);
+  const css = generateCssTemplate(components);
+  const basePath = presetsDir + name;
+
+  await writeFile(basePath + '.cjs', preset);
+  await writeFile(basePath + '.mjs', json);
+  await writeFile(basePath + '.tpl.css', css);
+
+  const output = sh('./node_modules/.bin/tailwindcss', ['-m', '-i', basePath + '.tpl.css', '-o', basePath + '.css'], {
+    env: { ...process.env, PRESET: name },
+  });
+
+  await unlink(basePath + '.tpl.css');
+
+  return output;
+}

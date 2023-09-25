@@ -5,8 +5,7 @@
   "main": "./server/index.mjs",
   "scripts": {
     "ci": "npm i && rm presets/* && npm run build",
-    "build": "node server/compile.mjs",
-    "compile": "true || for i in $(ls -1 systems | sed s/.mjs//); do echo $i; PRESET=$i tailwindcss -m -i ./presets/$i.tpl.css -o ./presets/$i.css && rm ./presets/$i.tpl.css || eit 1; done"
+    "build": "node server/compile.mjs"
   },
   "prettier": "@cloud-cli/prettier-config",
   "repository": {

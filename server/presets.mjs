@@ -131,7 +131,7 @@ function parseDefinitions(definitions) {
 }
 
 function generateScreens(devices) {
-  if (!devices) return;
+  if (!devices) return {};
 
   const entries = Object.entries(devices).map(([device, string]) => [
     device,
@@ -146,6 +146,10 @@ function generateScreens(devices) {
 }
 
 function generateColors(colors) {
+  if (!colors) {
+    return false;
+  }
+
   const entries = Object.entries(colors).map(([key, DEFAULT]) => [key, { DEFAULT }]);
 
   return Object.fromEntries(entries);

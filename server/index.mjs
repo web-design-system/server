@@ -22,6 +22,7 @@ async function onRequest(request, response) {
     }
 
     notFound(response);
+    return;
   }
 
   if (request.method !== 'POST') {
@@ -32,6 +33,7 @@ async function onRequest(request, response) {
   if (part === 'generate') {
     const input = await readStream(request);
     generate(JSON.parse(input), response);
+    return;
   }
 
   if (part === 'compile') {
@@ -51,6 +53,9 @@ async function onRequest(request, response) {
         response.end();
       }
     }
+
+    notFound(response);
+    return;
   }
 
   if (part === 'update') {
@@ -77,9 +82,9 @@ function notFound(response) {
   response.end('Page not found');
 }
 
-function generate(input, response) {
+async function generate(input, response) {
   try {
-    const output = generatePreset(input);
+    const output = await generatePreset(input);
     response.end(JSON.stringify(output, null, 2));
   } catch (error) {
     console.log(error);

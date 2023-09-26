@@ -1,7 +1,12 @@
 import { createServer } from 'node:http';
 import { existsSync, createReadStream } from 'node:fs';
 import { join } from 'node:path';
+import { Resource, StoreDriver } from '@cloud-cli/store';
+import { WDSComponent } from './resources.mjs';
 
+Resource.use(new StoreDriver());
+
+console.log(WDSComponent)
 const CWD = process.cwd();
 
 async function onRequest(request, response) {
@@ -17,6 +22,9 @@ async function onRequest(request, response) {
       createReadStream(path).pipe(response);
       return;
     }
+  }
+
+  if (part === 'component') {
   }
 
   response.writeHead(404);

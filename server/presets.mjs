@@ -1,5 +1,7 @@
-import { unlink, writeFile } from 'node:fs/promises';
-import { spawnSync as sh } from 'node:child_process';
+import tailwind from 'tailwindcss';
+import postcss from 'postcss';
+import autoprefixer from 'autoprefixer';
+import cssnano from 'cssnano';
 
 const commentSeparator = '//';
 const definitionSeparator = ':';
@@ -131,7 +133,9 @@ function parseDefinitions(definitions) {
 }
 
 function generateScreens(devices) {
-  if (!devices) return {};
+  if (!devices) {
+    return;
+  }
 
   const entries = Object.entries(devices).map(([device, string]) => [
     device,
@@ -147,12 +151,16 @@ function generateScreens(devices) {
 
 function generateColors(colors) {
   if (!colors) {
-    return false;
+    return;
   }
 
   const entries = Object.entries(colors).map(([key, DEFAULT]) => [key, { DEFAULT }]);
 
-  return Object.fromEntries(entries);
+  return {
+    transparent: 'transparent',
+    current: 'currentColor',
+    ...Object.fromEntries(entries),
+  };
 }
 
 function defineComponent(name, def) {
@@ -189,43 +197,38 @@ ${componentDefinitions}
 export function generateConfig(definitions) {
   const { borderRadius, colors, devices, spacing, plugins } = definitions;
 
-  const source = {
-    // presets: [],
+  return {
+    corePlugins: plugins || defaultPlugins,
     theme: {
       screens: generateScreens(devices),
-      colors: {
-        transparent: 'transparent',
-        current: 'currentColor',
-        ...generateColors(colors),
-      },
+      colors: generateColors(colors),
       borderRadius,
       spacing,
     },
-    corePlugins: plugins || defaultPlugins,
   };
-
-  return source;
 }
 
 export async function generatePreset(name, definitions) {
   const parsed = parseDefinitions(definitions);
-  const source = generateConfig(parsed);
+  const tailwindConfig = generateConfig(parsed);
   const { sizes, components, colors, spacing, devices } = parsed;
-  const presetsDir = process.cwd() + '/presets/';
-  const preset = 'module.exports = ' + JSON.stringify(source, null, 2);
+
+  const config = 'module.exports = ' + JSON.stringify(tailwindConfig, null, 2);
   const json = 'export default ' + JSON.stringify({ sizes, colors, spacing, devices }, null, 2);
   const css = generateCssTemplate(components);
-  const basePath = presetsDir + name;
+  const processor = postcss(tailwind(tailwindConfig), autoprefixer(), cssnano());
 
-  await writeFile(basePath + '.cjs', preset);
-  await writeFile(basePath + '.mjs', json);
-  await writeFile(basePath + '.tpl.css', css);
+  try {
+    const output = await processor.process(css, { from: `web-design-system/${name}.css`, to: `${name}.css` });
 
-  const output = sh('./node_modules/.bin/tailwindcss', ['-m', '-i', basePath + '.tpl.css', '-o', basePath + '.css'], {
-    env: { ...process.env, PRESET: name },
-  });
-
-  await unlink(basePath + '.tpl.css');
-
-  return output;
+    return {
+      error: null,
+      css: output.css,
+      map: output.map?.toString() || '',
+      config,
+      definitions: json,
+    };
+  } catch (error) {
+    return { error };
+  }
 }

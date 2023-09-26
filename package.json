@@ -19,6 +19,10 @@
     "@cloud-cli/prettier-config": "^1.0.0"
   },
   "dependencies": {
+    "@cloud-cli/store": "^2.0.3",
+    "autoprefixer": "^10.4.16",
+    "cssnano": "^6.0.1",
+    "postcss": "^8.4.30",
     "tailwindcss": "^2.2.19",
     "yaml": "^2.3.2"
   }

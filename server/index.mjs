@@ -1,12 +1,8 @@
 import { createServer } from 'node:http';
 import { existsSync, createReadStream } from 'node:fs';
 import { join } from 'node:path';
-import { Resource, StoreDriver } from '@cloud-cli/store';
-import { WDSComponent } from './resources.mjs';
+import { generatePreset } from './presets.mjs';
 
-Resource.use(new StoreDriver());
-
-console.log(WDSComponent)
 const CWD = process.cwd();
 
 async function onRequest(request, response) {
@@ -14,7 +10,7 @@ async function onRequest(request, response) {
   const parts = url.pathname.slice(1).split('/');
   const [part, ...args] = parts;
 
-  if (part === 'preset') {
+  if (part === 'preset' && request.method === 'GET') {
     const name = args[0];
     const path = join(CWD, 'presets', name);
 
@@ -24,18 +20,33 @@ async function onRequest(request, response) {
     }
   }
 
-  if (part === 'component') {
+  if (part === 'generate' && request.method === 'POST') {
+    const input = await readStream(request);
+
+    try {
+      const output = generatePreset(JSON.parse(input));
+      response.end(JSON.stringify(output, null, 2));
+    } catch (error) {
+      console.log(error);
+      response.writeHead(400);
+      response.end('Invalid spec');
+    }
   }
 
   response.writeHead(404);
-  response.end('Not found\n');
+  response.end('Page not found');
 }
 
-async function generate(system) {
-  const config = {
-    presets: [],
-  };
+function readStream(input) {
+  return new Promise((resolve) => {
+    const chunks = [];
+
+    input.on('data', (c) => chunks.push(c));
+    input.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+  });
 }
 
 const server = createServer((r, s) => onRequest(r, s));
-server.listen(process.env.PORT || 8080);
+server.listen(Number(process.env.PORT), () => {
+  console.log('Started on 127.0.0.1:' + process.env.PORT);
+});

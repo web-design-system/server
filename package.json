@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "main": "./server/index.mjs",
   "scripts": {
-    "ci": "npm i && rm presets/* && npm run build",
+    "ci": "npm i && npm run build",
+    "clean": "rm presets/*",
     "build": "node server/compile.mjs"
   },
   "prettier": "@cloud-cli/prettier-config",
@@ -19,7 +20,6 @@
     "@cloud-cli/prettier-config": "^1.0.0"
   },
   "dependencies": {
-    "@cloud-cli/store": "^2.0.3",
     "autoprefixer": "^10.4.16",
     "cssnano": "^6.0.1",
     "postcss": "^8.4.30",

@@ -11,7 +11,7 @@ async function main() {
     const source = await readFile(systemsDir + next, 'utf-8');
     const sourceDefinitions = Yaml.parse(source);
     const basePath = process.cwd() + '/presets/' + name;
-    const output = await generatePreset(name, sourceDefinitions);
+    const output = await generatePreset(sourceDefinitions);
 
     if (output.error) {
       console.log('Failed to compile ' + next);

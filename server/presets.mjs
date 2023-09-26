@@ -208,7 +208,7 @@ export function generateConfig(definitions) {
   };
 }
 
-export async function generatePreset(name, definitions) {
+export async function generatePreset(definitions) {
   const parsed = parseDefinitions(definitions);
   const tailwindConfig = generateConfig(parsed);
   const { sizes, components, colors, spacing, devices } = parsed;
@@ -219,7 +219,7 @@ export async function generatePreset(name, definitions) {
   const processor = postcss(tailwind(tailwindConfig), autoprefixer(), cssnano());
 
   try {
-    const output = await processor.process(css, { from: `web-design-system/${name}.css`, to: `${name}.css` });
+    const output = await processor.process(css, { from: `web-design-system.css`, to: `index.css` });
 
     return {
       error: null,

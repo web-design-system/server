@@ -22,7 +22,13 @@ async function onRequest(request, response) {
     }
   }
 
-  if (part === 'generate' && request.method === 'POST') {
+  if (request.method !== 'POST') {
+    response.writeHead(404);
+    response.end('Page not found');
+    return;
+  }
+
+  if (part === 'generate') {
     const input = await readStream(request);
     generate(input, response);
   }
@@ -46,7 +52,7 @@ async function onRequest(request, response) {
     }
   }
 
-  if (part === 'update' && request.method === 'POST') {
+  if (part === 'update') {
     const input = await readStream(request);
     const name = args[0];
 

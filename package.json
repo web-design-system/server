@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "main": "./server/index.mjs",
   "scripts": {
-    "ci": "npm i && npm run build",
+    "ci": "npm i",
     "clean": "rm presets/*",
     "build": "node server/compile.mjs"
   },

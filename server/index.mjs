@@ -41,17 +41,11 @@ async function onRequest(request, response) {
     const path = join(CWD, 'systems', name + '.yml');
 
     if (existsSync(path)) {
+      console.log('Generating ' + name + ' from ' + path);
       const input = await readFile(path, 'utf-8');
-      console.log('Generating ' + name);
-
-      try {
-        const json = Yaml.parse(input);
-        generate(json, response);
-      } catch (error) {
-        console.log(error, input);
-        response.writeHead(500);
-        response.end();
-      }
+      const json = Yaml.parse(input);
+      generate(json, response);
+      return;
     }
 
     notFound(response);
@@ -87,7 +81,7 @@ async function generate(input, response) {
     const output = await generatePreset(input);
     response.end(JSON.stringify(output, null, 2));
   } catch (error) {
-    console.log(error);
+    console.log(error, input);
     response.writeHead(400);
     response.end('Invalid preset definition');
   }

@@ -1,5 +1,23 @@
 # Design System as a Service
 
+## API
+
+### `GET /presets/:name.{css,conf.js,mjs,css.map}`
+
+Get a precompiled CSS or the configurations used to generate it
+
+### `POST /generate`
+
+Generate a design system (CSS and definitions) from a JSON input
+
+### `POST /compile`
+
+Compile a previously created design system
+
+### `POST /update/:name`
+
+Store a YAML definition file for a design system
+
 ## Device breakpoints
 
 ```js

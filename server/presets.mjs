@@ -216,7 +216,7 @@ export async function generatePreset(definitions) {
   const config = 'module.exports = ' + JSON.stringify(tailwindConfig, null, 2);
   const json = 'export default ' + JSON.stringify({ sizes, colors, spacing, devices }, null, 2);
   const css = generateCssTemplate(components);
-  const processor = postcss(tailwind(tailwindConfig), autoprefixer(), cssnano());
+  const processor = postcss(tailwind(tailwindConfig), autoprefixer(), definitions.minify && cssnano());
 
   try {
     const output = await processor.process(css, { from: `web-design-system.css`, to: `index.css` });

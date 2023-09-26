@@ -32,6 +32,7 @@ async function onRequest(request, response) {
 
     if (existsSync(path)) {
       const input = await readFile(path, 'utf-8');
+      console.log('Generating ' + name);
       generate(input, response);
     }
   }
@@ -42,6 +43,7 @@ async function onRequest(request, response) {
 
     if (name && input) {
       writeFile(join(CWD, 'systems', name + '.yml'), input);
+      console.log('Updated ' + name);
       response.end();
     } else {
       response.writeHead(400);

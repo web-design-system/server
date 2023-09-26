@@ -30,7 +30,7 @@ async function onRequest(request, response) {
 
   if (part === 'generate') {
     const input = await readStream(request);
-    generate(input, response);
+    generate(JSON.parse(input), response);
   }
 
   if (part === 'compile') {
@@ -74,7 +74,7 @@ async function onRequest(request, response) {
 
 function generate(input, response) {
   try {
-    const output = generatePreset(JSON.parse(input));
+    const output = generatePreset(input);
     response.end(JSON.stringify(output, null, 2));
   } catch (error) {
     console.log(error);

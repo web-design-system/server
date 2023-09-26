@@ -20,11 +20,12 @@ async function onRequest(request, response) {
       createReadStream(path).pipe(response);
       return;
     }
+
+    notFound(response);
   }
 
   if (request.method !== 'POST') {
-    response.writeHead(404);
-    response.end('Page not found');
+    notFound(response);
     return;
   }
 
@@ -68,6 +69,10 @@ async function onRequest(request, response) {
     return;
   }
 
+  notFound(response);
+}
+
+function notFound(response) {
   response.writeHead(404);
   response.end('Page not found');
 }

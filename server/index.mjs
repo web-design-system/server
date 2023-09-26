@@ -40,15 +40,35 @@ async function onRequest(request, response) {
     const name = sanitise(args[0]);
     const path = join(CWD, 'systems', name + '.yml');
 
-    if (existsSync(path)) {
-      console.log('Generating ' + name + ' from ' + path);
-      const input = await readFile(path, 'utf-8');
-      const json = Yaml.parse(input);
-      generate(json, response);
+    if (!existsSync(path)) {
+      notFound(response);
       return;
     }
 
-    notFound(response);
+    console.log('Generating ' + name + ' from ' + path);
+    const input = await readFile(path, 'utf-8');
+    const json = Yaml.parse(input);
+    const output = await generatePreset(json, response);
+
+    if (output.error) {
+      console.log(output.error);
+      response.writeHead(500);
+      response.end('Failed to compile ' + name);
+      return;
+    }
+
+    const { config, definitions, map, css } = output;
+    // TODO sanitize name
+    const basePath = join(CWD, 'presets', name);
+    await writeFile(basePath + '.conf.cjs', config);
+    await writeFile(basePath + '.mjs', definitions);
+    await writeFile(basePath + '.css', css);
+
+    if (map) {
+      await writeFile(basePath + '.css.map', map);
+    }
+
+    response.end('OK');
     return;
   }
 

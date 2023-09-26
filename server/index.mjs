@@ -34,8 +34,15 @@ async function onRequest(request, response) {
     if (existsSync(path)) {
       const input = await readFile(path, 'utf-8');
       console.log('Generating ' + name);
-      const json = Yaml.parse(input);
-      generate(json, response);
+
+      try {
+        const json = Yaml.parse(input);
+        generate(json, response);
+      } catch (error) {
+        console.log(error, input);
+        response.writeHead(500);
+        response.end();
+      }
     }
   }
 
@@ -44,9 +51,9 @@ async function onRequest(request, response) {
     const name = args[0];
 
     if (name && input) {
-      writeFile(join(CWD, 'systems', name + '.yml'), input);
+      writeFile(join(CWD, 'systems', name + '.yml'), input, 'utf-8');
       console.log('Updated ' + name);
-      response.end();
+      response.end(input);
     } else {
       response.writeHead(400);
       response.end('Missing name or input.\nPOST /update/:name');

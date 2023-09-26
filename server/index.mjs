@@ -3,6 +3,7 @@ import { existsSync, createReadStream } from 'node:fs';
 import { join } from 'node:path';
 import { generatePreset } from './presets.mjs';
 import { readFile, writeFile } from 'node:fs/promises';
+import Yaml from 'yaml';
 
 const CWD = process.cwd();
 
@@ -33,7 +34,8 @@ async function onRequest(request, response) {
     if (existsSync(path)) {
       const input = await readFile(path, 'utf-8');
       console.log('Generating ' + name);
-      generate(input, response);
+      const json = Yaml.parse(input);
+      generate(json, response);
     }
   }
 

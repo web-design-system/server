@@ -12,6 +12,11 @@ async function onRequest(request, response) {
   const parts = url.pathname.slice(1).split('/');
   const [part, ...args] = parts;
 
+  if (request.url === '/' && request.method === 'GET') {
+    createReadStream('./index.html').pipe(response);
+    return;
+  }
+
   if (part === 'assets' && request.method === 'GET') {
     const name = sanitise(args[0]);
     const path = join(CWD, 'presets', name);

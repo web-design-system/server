@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    /> -->
+    <link
+      href="https://wdn.homebots.io/wdn.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/hjs.css" />
+    <title>Web Design System</title>
+    <script type="module">
+      import { highlight } from 'https://highlight.jsfn.run/index.js';
+
+      window.addEventListener('DOMContentLoaded', () => {
+        document.body.querySelectorAll('code').forEach(hjs);
+      })
+
+      async function hjs(node) {
+        const language = node.getAttribute('lang') || 'text';
+        node.innerHTML = await highlight(node.textContent.trim(), { language, embed: true });
+      }
+    </script>
+  </head>
+  <body>
+    <section class="bg-gray-800 text-white p-6">
+      <div class="container mx-auto h-screen">
+        <h1 class="text-4xl font-bold">Web Design System</h1>
+        <p class="text-lg">A styleguide and design system generator</p>
+        <div class="flex gap-4">
+          <code class="font-mono my-4 p-4 rounded-lg overflow-auto border border-gray-600 bg-white flex-1 text-gray-700" lang="yaml"><pre>
+plugins:
+  - preflight
+  - margin
+  - padding
+  - width
+  - height
+  - backgroundColor
+  - borderColor
+  - boxShadow
+
+colors:
+  white:     '#fff'
+  black:     '#000'
+  primary:   '#6b7280'
+
+spacing:
+  sm:    0.5rem
+  md:    1rem
+  lg:    2rem
+
+components:
+  card:
+    apply: p-lg mb-lg bg-white shadow-lg
+    parts:
+      title: font-bold text-4xl mb-4
+      body: text-lg
+          </pre></code>
+
+          <code class="font-mono my-4 p-4 rounded-lg overflow-auto border border-gray-600 bg-white flex-1 text-gray-700" lang="html"><pre>
+&lt;div class="card">
+&lt;h2 class="card__title">Web Design System.&lt;/h2>
+&lt;p class="card__body">A styleguide and design system generator&lt;/p>
+&lt;/div>
+          </pre></code>
+      </div>
+    </section>
+    <!-- <section class="py-12 bg-white">
+      <div class="container mx-auto h-screen">
+        <h2 class="text-3xl font-bold mb-6">Built on top of of TailwindCSS</h2>
+        <p class="text-lg mb-12">
+          Reuse the Tailwind styles with a minimal setup for your team or project.
+        </p>
+      </div>
+    </section>
+    <section class="py-12 bg-gray-100">
+      <div class="container mx-auto h-screen">
+        <h2 class="text-3xl font-bold mb-6">Getting Started</h2>
+        <p class="text-lg mb-12">
+        </p>
+      </div>
+    </section>
+    <section class="py-12 bg-white">
+      <div class="container mx-auto h-screen">
+        <h2 class="text-3xl font-bold mb-6">Examples</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+        </div>
+      </div>
+    </section> -->
+    <footer class="bg-gray-800 text-white p-6">
+      <div class="container mx-auto text-center">
+        <p class="text-lg">
+          Designed with ♥ by <a href="https://github.com/darlanalves">Darlan Alves</a>. Licensed under the MIT License.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

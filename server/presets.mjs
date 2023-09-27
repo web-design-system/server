@@ -218,7 +218,7 @@ export async function generatePreset(definitions) {
   const plugins = [tailwind(tailwindConfig), autoprefixer(), definitions.minify && cssnano()].filter(Boolean);
   const processor = postcss(...plugins);
   try {
-    const output = await processor.process(css, { from: `web-design-system.css`, to: `index.css` });
+    const output = await processor.process(css, { from: '/web-design-system.css', to: '/index.css' });
 
     return {
       error: null,

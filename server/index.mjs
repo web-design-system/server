@@ -71,7 +71,7 @@ async function onRequest(request, response) {
     if (output.error) {
       console.log(output.error);
       response.writeHead(500);
-      response.end('Failed to compile ' + name);
+      response.end('Failed to compile ' + name + ':\n' + String(error));
       return;
     }
 

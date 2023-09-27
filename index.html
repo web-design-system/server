@@ -12,7 +12,7 @@
       import { highlight } from 'https://highlight.jsfn.run/index.js';
 
       window.addEventListener('DOMContentLoaded', () => {
-        document.body.querySelectorAll('code').forEach(hjs);
+        document.body.querySelectorAll('div[lang]').forEach(hjs);
       })
 
       async function hjs(node) {
@@ -29,7 +29,7 @@
           <p class="card__body">A styleguide and design system generator</p>
         </div>
         <div class="flex gap-4">
-          <code class="font-mono my-4 p-4 rounded-lg overflow-auto border border-gray-600 bg-white flex-1 text-gray-700" lang="yaml"><pre>
+          <div class="codeblock" lang="yaml"><pre>
 plugins:
   - preflight
   - margin
@@ -56,14 +56,14 @@ components:
     parts:
       title: font-bold text-4xl mb-4
       body: text-lg
-          </pre></code>
+          </pre></div>
 
-          <code class="font-mono my-4 p-4 rounded-lg overflow-auto border border-gray-600 bg-white flex-1 text-gray-700" lang="html"><pre>
+          <div class="codeblock" lang="html"><pre>
 &lt;div class="card">
 &lt;h2 class="card__title">Web Design System.&lt;/h2>
 &lt;p class="card__body">A styleguide and design system generator&lt;/p>
 &lt;/div>
-          </pre></code>
+          </pre></div>
       </div>
     </section>
     <!-- <section class="py-12 bg-white">

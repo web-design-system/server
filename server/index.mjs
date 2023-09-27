@@ -1,8 +1,8 @@
 import { createServer } from 'node:http';
 import { existsSync, createReadStream } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
 import { generatePreset } from './presets.mjs';
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import Yaml from 'yaml';
 
 const CWD = process.cwd();
@@ -12,9 +12,22 @@ async function onRequest(request, response) {
   const parts = url.pathname.slice(1).split('/');
   const [part, ...args] = parts;
 
-  if (part === 'presets' && request.method === 'GET') {
+  if (part === 'assets' && request.method === 'GET') {
     const name = sanitise(args[0]);
     const path = join(CWD, 'presets', name);
+
+    if (existsSync(path)) {
+      createReadStream(path).pipe(response);
+      return;
+    }
+
+    notFound(response);
+    return;
+  }
+
+  if (part === 'preset' && request.method === 'GET') {
+    const name = sanitise(args[0]);
+    const path = join(CWD, 'systems', name + '.yml');
 
     if (existsSync(path)) {
       createReadStream(path).pipe(response);
@@ -72,12 +85,14 @@ async function onRequest(request, response) {
     return;
   }
 
-  if (part === 'update') {
+  if (part === 'preset') {
     const input = await readStream(request);
-    const name = args[0];
+    const name = sanitise(args[0]);
 
     if (name && input) {
-      writeFile(join(CWD, 'systems', name + '.yml'), input, 'utf-8');
+      const inputPath = join(CWD, 'systems', name + '.yml');
+      await ensureFolder(dirname(inputPath));
+      await writeFile(inputPath, input, 'utf-8');
       console.log('Updated ' + name);
       response.end(input);
     } else {
@@ -89,6 +104,10 @@ async function onRequest(request, response) {
   }
 
   notFound(response);
+}
+
+async function ensureFolder(folder) {
+  return existsSync(folder) || (await mkdir(folder, { recursive: true }));
 }
 
 function notFound(response) {

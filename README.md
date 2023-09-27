@@ -2,21 +2,25 @@
 
 ## API
 
-### `GET /presets/:name.{css,conf.js,mjs,css.map}`
+### `GET /assets/:name.{css,conf.js,mjs,css.map}`
 
 Get a precompiled CSS or the configurations used to generate it
 
 ### `POST /generate`
 
-Generate a design system (CSS and definitions) from a JSON input
+Transform a design system (CSS and definitions) from a JSON input
 
 ### `POST /compile/:name`
 
-Compile a previously created design system
+Transform a design system to a final CSS
 
-### `POST /update/:name`
+### `POST /preset/:name`
 
-Store a YAML definition file for a design system
+Store a YAML definition for a design system
+
+### `GET /preset/:name`
+
+Retrieve the YAML definition for a design system
 
 ## Design System Definitions
 
@@ -49,12 +53,6 @@ colors: |
 # This examples defines p-0, p-1 and p-sm as valid paddings
 spacing:
   0: 0
-  1: 0.25rem
-  2: 0.5rem
-  3: 0.75rem
-  4: 1rem
-  5: 1.25rem
-  6: 1.5rem
   sm: 0.5rem
   md: 1rem
   lg: 2rem
@@ -65,9 +63,6 @@ spacing:
 components:
   btn:
     apply: px-4 py-2 bg-primary-dark hover:bg-gray
-    variants:
-      - hover
-      - responsive
     parts:
       icon: mr-4
 

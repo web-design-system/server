@@ -35,63 +35,14 @@ devices:
 plugins:
   - preflight
   - container
-  - alignContent
-  - alignItems
-  - alignSelf
-  - animation
-  - backgroundColor
-  - blur
-  - borderColor
-  - borderRadius
-  - borderStyle
-  - borderWidth
-  - boxShadow
-  - display
-  - flex
-  - flexDirection
-  - flexGrow
-  - flexShrink
-  - flexWrap
-  - float
-  - fontFamily
-  - fontSize
-  - fontStyle
-  - fontWeight
-  - gap
-  - gridColumn
-  - gridColumnEnd
-  - gridColumnStart
-  - gridRow
-  - gridRowEnd
-  - gridRowStart
-  - gridTemplateColumns
-  - gridTemplateRows
-  - height
-  - inset
-  - justifyContent
-  - justifyItems
-  - justifySelf
-  - lineHeight
+  - preflight
   - margin
-  - minHeight
-  - minWidth
-  - overflow
-  - outline
   - padding
-  - position
-  - ringColor
-  - ringOffsetColor
-  - ringOffsetWidth
-  - ringOpacity
-  - ringWidth
-  - textAlign
-  - textColor
-  - textDecoration
-  - textOverflow
-  - visibility
-  - whitespace
   - width
-  - zIndex
+  - height
+  - backgroundColor
+  - borderColor
+  - boxShadow
 
 radius: |
   none:     0

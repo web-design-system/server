@@ -123,11 +123,16 @@ function notFound(response) {
 async function generate(input, response) {
   try {
     const output = await generatePreset(input);
+
+    if (output.error) {
+      throw output.error;
+    }
+
     response.end(JSON.stringify(output, null, 2));
   } catch (error) {
     console.log(error, input);
     response.writeHead(400);
-    response.end("Invalid preset definition");
+    response.end('Invalid preset definition: ' + String(error));
   }
 }
 

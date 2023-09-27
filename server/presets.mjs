@@ -118,17 +118,15 @@ function transformText(input) {
 }
 
 function parseDefinitions(definitions) {
-  const { prefix, sizes, colors, gaps, devices, radius, components, plugins } = definitions;
+  const { sizes, colors, spacing, devices, radius } = definitions;
 
   return {
+    ...definitions,
     sizes: transformText(sizes),
     colors: transformText(colors),
-    gaps: transformText(gaps),
+    spacing: transformText(spacing),
     devices: transformText(devices),
     borderRadius: transformText(radius),
-    components,
-    plugins,
-    prefix,
   };
 }
 
@@ -202,11 +200,9 @@ export function generateConfig(definitions) {
     theme: {
       screens: generateScreens(devices),
       colors: generateColors(colors),
-      extend: {
-        borderRadius,
-        spacing,
-        ...extend,
-      },
+      borderRadius,
+      spacing,
+      extend,
     },
   };
 }

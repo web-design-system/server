@@ -112,7 +112,7 @@ function transformText(input) {
       : Object.entries(input);
 
   return source.reduce((all, next) => {
-    all[next[0].trim()] = next[1].trim();
+    all[String(next[0]).trim()] = String(next[1]).trim();
     return all;
   }, {});
 }

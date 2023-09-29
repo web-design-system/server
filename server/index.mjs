@@ -124,6 +124,7 @@ async function compilePreset(args, response) {
     await writeFile(basePath + ".css.map", map);
   }
 
+  console.log('Finished in ' + (Date.now() - start) + 'ms');
   response.end("OK");
 }
 

@@ -2,98 +2,19 @@ import tailwind from 'tailwindcss';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
+import { defaultPlugins, allPlugins } from './constants.mjs';
 
 const commentSeparator = '//';
 const definitionSeparator = ':';
-const defaultPlugins = [
-  'preflight',
-  'container',
-  'accessibility',
-  'alignContent',
-  'alignItems',
-  'alignSelf',
-  'animation',
-  'backgroundAttachment',
-  'backgroundColor',
-  'backgroundImage',
-  'backgroundPosition',
-  'backgroundRepeat',
-  'backgroundSize',
-  'blur',
-  'borderCollapse',
-  'borderColor',
-  'borderRadius',
-  'borderStyle',
-  'borderWidth',
-  'boxShadow',
-  'content',
-  'display',
-  'dropShadow',
-  'fill',
-  'filter',
-  'flex',
-  'flexDirection',
-  'flexGrow',
-  'flexShrink',
-  'flexWrap',
-  'float',
-  'fontFamily',
-  'fontSize',
-  'fontStyle',
-  'fontWeight',
-  'gap',
-  'grayscale',
-  'gridAutoColumns',
-  'gridAutoFlow',
-  'gridAutoRows',
-  'gridColumn',
-  'gridColumnEnd',
-  'gridColumnStart',
-  'gridRow',
-  'gridRowEnd',
-  'gridRowStart',
-  'gridTemplateColumns',
-  'gridTemplateRows',
-  'height',
-  'inset',
-  'justifyContent',
-  'justifyItems',
-  'justifySelf',
-  'lineHeight',
-  'listStylePosition',
-  'listStyleType',
-  'margin',
-  'maxHeight',
-  'maxWidth',
-  'minHeight',
-  'minWidth',
-  'opacity',
-  'order',
-  'outline',
-  'overflow',
-  'padding',
-  'position',
-  'resize',
-  'ringColor',
-  'ringOffsetColor',
-  'ringOffsetWidth',
-  'ringOpacity',
-  'ringWidth',
-  'rotate',
-  'scale',
-  'stroke',
-  'strokeWidth',
-  'tableLayout',
-  'textAlign',
-  'textColor',
-  'textDecoration',
-  'textOverflow',
-  'transform',
-  'visibility',
-  'whitespace',
-  'width',
-  'zIndex',
-];
+
+const transformPlugins = (list) => list.flatMap(next => {
+  if (next.endsWith('*')) {
+    const stem = next.slice(0, -1);
+    return allPlugins.filter(p => p.startsWith(stem));
+  }
+
+  return next;
+});
 
 function transformText(input) {
   if (!input) return undefined;
@@ -196,7 +117,7 @@ export function generateConfig(definitions) {
   const { borderRadius, colors, devices, spacing, plugins, extend = {} } = definitions;
 
   return {
-    corePlugins: plugins || defaultPlugins,
+    corePlugins: transformPlugins(plugins || defaultPlugins),
     theme: {
       screens: generateScreens(devices),
       colors: generateColors(colors),

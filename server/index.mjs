@@ -11,104 +11,33 @@ async function onRequest(request, response) {
   const url = new URL(request.url, "http://localhost");
   const parts = url.pathname.slice(1).split("/");
   const [part, ...args] = parts;
+  const route = request.method + " /" + part;
 
-  if (request.url === "/" && request.method === "GET") {
-    createReadStream("./index.html").pipe(response);
-    return;
-  }
+  switch (route) {
+    case "GET /":
+      return createReadStream("./index.html").pipe(response);
 
-  if (part === "assets" && request.method === "GET") {
-    const name = sanitise(args[0]);
-    const path = join(CWD, "presets", name);
+    case "GET /edit":
+      return createReadStream("./editor.html").pipe(response);
 
-    if (existsSync(path)) {
-      createReadStream(path).pipe(response);
-      return;
-    }
+    case "GET /assets":
+      return getAsset(args, response);
 
-    notFound(response);
-    return;
-  }
+    case "GET /preset":
+      return getPreset(args, response);
 
-  if (part === "preset" && request.method === "GET") {
-    const name = sanitise(args[0]);
-    const path = join(CWD, "systems", name + ".yml");
+    case "POST /generate":
+      return generate(request, response);
 
-    if (existsSync(path)) {
-      createReadStream(path).pipe(response);
-      return;
-    }
+    case "POST /compile":
+      return compilePreset(args, response);
 
-    notFound(response);
-    return;
-  }
+    case "POST /preset":
+      return savePreset(args, request, response);
 
-  if (request.method !== "POST") {
-    notFound(response);
-    return;
-  }
-
-  if (part === "generate") {
-    const input = await readStream(request);
-    generate(JSON.parse(input), response);
-    return;
-  }
-
-  if (part === "compile") {
-    const name = sanitise(args[0]);
-    const path = join(CWD, "systems", name + ".yml");
-
-    if (!existsSync(path)) {
+    default:
       notFound(response);
-      return;
-    }
-
-    console.log("Generating " + name + " from " + path);
-    const input = await readFile(path, "utf-8");
-    const json = Yaml.parse(input);
-    const output = await generatePreset(json, response);
-
-    if (output.error) {
-      console.log(output.error);
-      response.writeHead(500);
-      response.end("Failed to compile " + name + ":\n" + String(output.error));
-      return;
-    }
-
-    const { config, definitions, map, css } = output;
-    // TODO sanitize name
-    const basePath = join(CWD, "presets", name);
-    await writeFile(basePath + ".conf.cjs", config);
-    await writeFile(basePath + ".mjs", definitions);
-    await writeFile(basePath + ".css", css);
-
-    if (map) {
-      await writeFile(basePath + ".css.map", map);
-    }
-
-    response.end("OK");
-    return;
   }
-
-  if (part === "preset") {
-    const input = await readStream(request);
-    const name = sanitise(args[0]);
-
-    if (name && input) {
-      const inputPath = join(CWD, "systems", name + ".yml");
-      await ensureFolder(dirname(inputPath));
-      await writeFile(inputPath, input, "utf-8");
-      console.log("Updated " + name);
-      response.end(input);
-    } else {
-      response.writeHead(400);
-      response.end("Missing name or input.\nPOST /update/:name");
-    }
-
-    return;
-  }
-
-  notFound(response);
 }
 
 async function ensureFolder(folder) {
@@ -120,8 +49,90 @@ function notFound(response) {
   response.end("Page not found");
 }
 
-async function generate(input, response) {
+async function savePreset(args, request, response) {
+  const input = await readStream(request);
+  const name = sanitise(args[0]);
+
+  if (name && input) {
+    const inputPath = join(CWD, "systems", name + ".yml");
+    await ensureFolder(dirname(inputPath));
+    await writeFile(inputPath, input, "utf-8");
+    console.log("Updated " + name);
+    response.end(input);
+  } else {
+    response.writeHead(400);
+    response.end("Missing name or input.\nPOST /update/:name");
+  }
+}
+
+async function getAsset(args, response) {
+  const name = sanitise(args[0]);
+  const path = join(CWD, "presets", name);
+
+  if (existsSync(path)) {
+    createReadStream(path).pipe(response);
+    return;
+  }
+
+  notFound(response);
+}
+
+async function getPreset(args, response) {
+  const name = sanitise(args[0]);
+  const path = join(CWD, "systems", name + ".yml");
+
+  if (existsSync(path)) {
+    createReadStream(path).pipe(response);
+    return;
+  }
+
+  notFound(response);
+}
+
+async function compilePreset(args, response) {
+  const name = sanitise(args[0]);
+  const path = join(CWD, "systems", name + ".yml");
+
+  if (!existsSync(path)) {
+    return notFound(response);
+  }
+
+  console.log("Generating " + name + " from " + path);
+  const input = await readFile(path, "utf-8");
+  const json = Yaml.parse(input);
+  const output = await generatePreset(json, response);
+
+  if (output.error) {
+    console.log(output.error);
+    response.writeHead(500);
+    response.end("Failed to compile " + name + ":\n" + String(output.error));
+    return;
+  }
+
+  const { config, definitions, map, css } = output;
+  // TODO sanitize name
+  const basePath = join(CWD, "presets", name);
+  await writeFile(basePath + ".conf.cjs", config);
+  await writeFile(basePath + ".mjs", definitions);
+  await writeFile(basePath + ".css", css);
+
+  if (map) {
+    await writeFile(basePath + ".css.map", map);
+  }
+
+  response.end("OK");
+}
+
+async function generate(request, response) {
   try {
+    let input = await readStream(request);
+
+    if (input.trim().startsWith("{")) {
+      input = JSON.parse(input);
+    } else {
+      input = Yaml.parse(input);
+    }
+
     const output = await generatePreset(input);
 
     if (output.error) {
@@ -132,7 +143,7 @@ async function generate(input, response) {
   } catch (error) {
     console.log(error, input);
     response.writeHead(400);
-    response.end('Invalid preset definition: ' + String(error));
+    response.end("Invalid preset definition: " + String(error));
   }
 }
 

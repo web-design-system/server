@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    <link rel="stylesheet" href="/assets/wds.css" />
+  </head>
+  <body class="page">
+    <div class="editor">
+      <div id="editor" class="editor__content"></div>
+      <div class="editor__toolbar">
+        <button class="btn btn-primary" data-action="save">Save</button>
+        <button class="btn btn-secondary" data-action="compile">Compile</button>
+      </div>
+    </div>
+
+    <!-- Load the Monaco Editor from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs/loader.js"></script>
+    <script>
+      require.config({
+        paths: {
+          vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs",
+        },
+      });
+
+      function debounce(fn, wait) {
+        let timeout;
+
+        return (...args) => {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+      }
+
+      require(["vs/editor/editor.main"], async function () {
+        const [_, name] = location.pathname.slice(1).split("/");
+        const source = await fetch("/preset/" + name);
+
+        const editor = monaco.editor.create(document.getElementById("editor"), {
+          value: source.ok ? await source.text() : "",
+          language: "yaml",
+        });
+
+        const save = () =>
+          fetch("/preset/" + name, {
+            method: "POST",
+            body: editor.value,
+          });
+
+        const compile = () =>
+          fetch("/compile/" + name, {
+            method: "POST",
+          });
+
+        const debouncedSave = debounce(save, 2000);
+
+        editor.onDidChangeModelContent(function (event) {
+          console.log("Editor content changed!", event);
+          window.autoSave && debouncedSave();
+        });
+
+        const actions = {
+          save,
+          compile,
+        };
+
+        document.querySelectorAll("[data-action]").forEach((c) => {
+          const action = c.dataset.action;
+
+          if (actions[action]) {
+            c.addEventListener("click", async () => {
+              c.disabled = true;
+              await actions[action]();
+              c.disabled = false;
+            });
+          }
+        });
+
+        window.editor = editor;
+      });
+    </script>
+  </body>
+</html>

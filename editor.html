@@ -10,6 +10,7 @@
     <div class="editor">
       <div id="editor" class="editor__content"></div>
       <div class="editor__toolbar">
+        <input type="checkbox" data-action="autosave" />
         <button class="btn btn-primary" data-action="save">Save</button>
         <button class="btn btn-secondary" data-action="compile">Compile</button>
       </div>
@@ -28,7 +29,7 @@
 
         return (...args) => {
           clearTimeout(timeout);
-          timeout = setTimeout(() => func.apply(this, args), wait);
+          timeout = setTimeout(() => fn.apply(this, args), wait);
         };
       }
 
@@ -52,18 +53,23 @@
             method: "POST",
           });
 
+        const toggleAutoSave = (event) => {
+          window.autoSave = event.target.checked;
+        };
+
         const actions = {
           save,
           compile,
+          autosave: toggleAutoSave,
         };
 
         document.querySelectorAll("[data-action]").forEach((c) => {
           const action = c.dataset.action;
 
           if (actions[action]) {
-            c.addEventListener("click", async () => {
+            c.addEventListener("click", async (event) => {
               c.disabled = true;
-              await actions[action]();
+              await actions[action](event);
               c.disabled = false;
             });
           }

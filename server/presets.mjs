@@ -7,17 +7,22 @@ import { defaultPlugins, allPlugins } from './constants.mjs';
 const commentSeparator = '//';
 const definitionSeparator = ':';
 
-const transformPlugins = (list) => list.flatMap(next => {
-  if (next.endsWith('*')) {
-    const stem = next.slice(0, -1);
-    return allPlugins.filter(p => p.startsWith(stem));
-  }
+const transformPlugins = (list) =>
+  !Array.isArray(list) ?
+  [] :
+  list.flatMap(next => {
+    if (next.endsWith('*')) {
+      const stem = next.slice(0, -1);
+      return allPlugins.filter(p => p.startsWith(stem));
+    }
 
-  return next;
-});
+    return next;
+  });
 
 function transformText(input) {
-  if (!input) return undefined;
+  if (!input) {
+    return undefined;
+  }
 
   const source =
     typeof input === 'string'
@@ -39,7 +44,7 @@ function transformText(input) {
 }
 
 function parseDefinitions(definitions) {
-  const { sizes, colors, spacing, devices, radius } = definitions;
+  const { sizes, colors, spacing, devices } = definitions;
 
   return {
     ...definitions,
@@ -47,7 +52,6 @@ function parseDefinitions(definitions) {
     colors: transformText(colors),
     spacing: transformText(spacing),
     devices: transformText(devices),
-    borderRadius: transformText(radius),
   };
 }
 
@@ -114,17 +118,19 @@ ${componentDefinitions}
 }
 
 export function generateConfig(definitions) {
-  const { borderRadius, colors, devices, spacing, plugins, extend = {} } = definitions;
+  const { borderRadius, colors, devices, spacing, plugins, preset, variants = {}, theme = {} } = definitions;
 
   return {
+    ...(Array.isArray(preset) && { preset: preset.map(generateConfig) } || {}),
     corePlugins: transformPlugins(plugins || defaultPlugins),
     theme: {
       screens: generateScreens(devices),
       colors: generateColors(colors),
       borderRadius,
       spacing,
-      extend,
+      ...theme,
     },
+    variants
   };
 }
 
@@ -144,7 +150,6 @@ export async function generatePreset(definitions) {
     return {
       error: null,
       css: output.css,
-      map: output.map?.toString() || '',
       config,
       definitions: json,
     };

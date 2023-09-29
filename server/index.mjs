@@ -53,15 +53,20 @@ async function savePreset(args, request, response) {
   const input = await readStream(request);
   const name = sanitise(args[0]);
 
-  if (name && input) {
+  try {
+    if (!(name && input)) {
+      throw new Error("Missing name or input.\nPOST /update/:name");
+    }
+
+    Yaml.parse(input);
     const inputPath = join(CWD, "systems", name + ".yml");
     await ensureFolder(dirname(inputPath));
     await writeFile(inputPath, input, "utf-8");
-    console.log("Updated " + name);
-    response.end(input);
-  } else {
+    response.end("OK");
+  } catch (error) {
+    console.log('Failed to update' + name, error);
     response.writeHead(400);
-    response.end("Missing name or input.\nPOST /update/:name");
+    response.end(String(error));
   }
 }
 
@@ -91,15 +96,15 @@ async function getPreset(args, response) {
 
 async function compilePreset(args, response) {
   const name = sanitise(args[0]);
-  const path = join(CWD, "systems", name + ".yml");
+  const preset = await loadPreset(name);
 
-  if (!existsSync(path)) {
+  if (!preset) {
     return notFound(response);
   }
 
-  console.log("Generating " + name + " from " + path);
-  const input = await readFile(path, "utf-8");
-  const json = Yaml.parse(input);
+  const start = Date.now();
+  console.log("Generating " + name);
+  const json = await loadChain(preset);
   const output = await generatePreset(json, response);
 
   if (output.error) {
@@ -110,7 +115,6 @@ async function compilePreset(args, response) {
   }
 
   const { config, definitions, map, css } = output;
-  // TODO sanitize name
   const basePath = join(CWD, "presets", name);
   await writeFile(basePath + ".conf.cjs", config);
   await writeFile(basePath + ".mjs", definitions);
@@ -147,10 +151,51 @@ async function generate(request, response) {
   }
 }
 
+/**
+ * @param {String} name
+ * @returns {Promise<object|null>} preset
+ */
+async function loadPreset(name) {
+  const path = join(CWD, "systems", name + ".yml");
+
+  if (!existsSync(path)) {
+    return null;
+  }
+
+  const input = await readFile(path, "utf-8");
+  return Yaml.parse(input);
+}
+
+/**
+ * @param {object} preset
+ * @returns {Promise<object>} preset chain
+ */
+async function loadChain(preset) {
+  if (!preset.extend) {
+    return preset;
+  }
+
+  const next = await loadPreset(preset.extend);
+  preset.preset = [next, ...(preset.preset || [])].filter(Boolean);
+
+  if (next?.extend) {
+    await loadChain(next);
+  }
+
+  return preset;
+}
+
+/**
+ * @param {String} input
+ */
 function sanitise(input) {
   return String(input).replace(/[.]{2,}/g, ".");
 }
 
+/**
+ * @param {Object} input
+ * @returns {Promise<String>}
+ */
 function readStream(input) {
   return new Promise((resolve) => {
     const chunks = [];

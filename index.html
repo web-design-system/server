@@ -3,67 +3,72 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      href="https://wdn.homebots.io/wds.css"
-      rel="stylesheet"
-    />
+    <link href="https://wdn.homebots.io/wds.css" rel="stylesheet" />
     <title>Web Design System</title>
     <script type="module">
       import { highlight } from 'https://highlight.jsfn.run/index.js';
 
       window.addEventListener('DOMContentLoaded', () => {
         document.body.querySelectorAll('div[lang]').forEach(hjs);
-      })
+        document.body.querySelectorAll('[data-tabs]').forEach(addTabs);
+      });
 
       async function hjs(node) {
         const language = node.getAttribute('lang') || 'text';
-        node.innerHTML = await highlight(node.textContent.trim(), { language, embed: true });
+        const source = node.dataset.src
+          ? await fetch(node.dataset.src, { mode: 'cors' }).then((x) => x.text())
+          : node.textContent.trim();
+
+        node.innerHTML = await highlight(source, { language, embed: true });
+      }
+
+      function addTabs(root) {
+        const contents = root.querySelectorAll('[data-tab]');
+        const buttons = root.querySelectorAll('[data-target]');
+
+        buttons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const target = btn.dataset.target;
+            contents.forEach((tab) => {
+              tab.classList[tab.dataset.tab === target ? 'remove' : 'add']('hidden');
+            });
+          });
+        });
       }
     </script>
   </head>
   <body>
-    <section class="bg-gray-800 text-white p-6">
+    <section class="wds-section wds-section-dark">
       <div class="container mx-auto h-screen">
-        <div class="card">
-          <h2 class="card__title">Web Design System</h2>
-          <p class="card__body">A styleguide and design system generator</p>
+        <div class="wds-card">
+          <h2 class="wds-card__title">Web Design System</h2>
+          <p class="wds-card__body">A styleguide and design system generator</p>
         </div>
-        <div class="flex gap-4">
-          <div class="codeblock" lang="yaml"><pre>
-plugins:
-  - preflight
-  - margin
-  - padding
-  - width
-  - height
-  - backgroundColor
-  - borderColor
-  - boxShadow
 
-colors:
-  white:     '#fff'
-  black:     '#000'
-  primary:   '#6b7280'
-
-spacing:
-  sm:    0.5rem
-  md:    1rem
-  lg:    2rem
-
-components:
-  card:
-    apply: p-lg mb-lg bg-white shadow-lg
-    parts:
-      title: font-bold text-4xl mb-4
-      body: text-lg
-          </pre></div>
-
-          <div class="codeblock" lang="html"><pre>
-&lt;div class="card">
-&lt;h2 class="card__title">Web Design System.&lt;/h2>
-&lt;p class="card__body">A styleguide and design system generator&lt;/p>
-&lt;/div>
-          </pre></div>
+        <div class="wds-tabs" data-tabs="">
+          <nav class="wds-tabs__nav">
+            <button class="wds-tabs__button" data-target="preset">Preset</button>
+            <button class="wds-tabs__button" data-target="html">HTML</button>
+          </nav>
+          <div class="wds-tabs__content">
+            <div class="wds-tabs__item" data-tab="preset">
+              <div class="wds-codeblock" lang="yaml" data-src="https://wdn.homebots.io/wds.conf.cjs">
+                <pre>...</pre>
+              </div>
+            </div>
+            <div class="wds-tabs__item hidden" data-tab="html">
+              <div class="codeblock" lang="html">
+                <pre>
+    &lt;div class="card">
+    &lt;h2 class="card__title">Web Design System.&lt;/h2>
+    &lt;p class="card__body">A styleguide and design system generator&lt;/p>
+    &lt;/div>
+</pre
+                >
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
     <!-- <section class="py-12 bg-white">
@@ -88,7 +93,7 @@ components:
         </div>
       </div>
     </section> -->
-    <footer class="bg-gray-800 text-white p-6">
+    <footer class="bg-gray text-white p-lg">
       <div class="container mx-auto text-center">
         <p class="text-lg">
           Designed with ♥ by <a href="https://github.com/darlanalves">Darlan Alves</a>. Licensed under the MIT License.

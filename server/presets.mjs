@@ -2,6 +2,7 @@ import tailwind from 'tailwindcss';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
+import resolveConfig from 'tailwindcss/resolveConfig';
 import { defaultPlugins, allPlugins } from './constants.mjs';
 
 const commentSeparator = '//';
@@ -120,7 +121,7 @@ ${componentDefinitions}
 export function generateConfig(definitions) {
   const { borderRadius, colors, devices, spacing, plugins, presets, variants = {}, theme = {} } = definitions;
 
-  return {
+  return resolveConfig({
     ...((Array.isArray(presets) && { presets: presets.map(generateConfig) }) || {}),
     corePlugins: transformPlugins(plugins || defaultPlugins),
     theme: {
@@ -133,7 +134,7 @@ export function generateConfig(definitions) {
       ...theme,
     },
     variants,
-  };
+  });
 }
 
 export async function generatePreset(definitions) {

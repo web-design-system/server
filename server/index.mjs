@@ -177,7 +177,7 @@ async function loadChain(preset) {
   }
 
   const next = await loadPreset(preset.extend);
-  preset.preset = [next, ...(preset.preset || [])].filter(Boolean);
+  preset.presets = [next, ...(preset.presets || [])].filter(Boolean);
 
   if (next?.extend) {
     await loadChain(next);

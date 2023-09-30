@@ -8,16 +8,16 @@ const commentSeparator = '//';
 const definitionSeparator = ':';
 
 const transformPlugins = (list) =>
-  !Array.isArray(list) ?
-  [] :
-  list.flatMap(next => {
-    if (next.endsWith('*')) {
-      const stem = next.slice(0, -1);
-      return allPlugins.filter(p => p.startsWith(stem));
-    }
+  !Array.isArray(list)
+    ? []
+    : list.flatMap((next) => {
+        if (next.endsWith('*')) {
+          const stem = next.slice(0, -1);
+          return allPlugins.filter((p) => p.startsWith(stem));
+        }
 
-    return next;
-  });
+        return next;
+      });
 
 function transformText(input) {
   if (!input) {
@@ -121,16 +121,18 @@ export function generateConfig(definitions) {
   const { borderRadius, colors, devices, spacing, plugins, presets, variants = {}, theme = {} } = definitions;
 
   return {
-    ...(Array.isArray(presets) && { presets: presets.map(generateConfig) } || {}),
+    ...((Array.isArray(presets) && { presets: presets.map(generateConfig) }) || {}),
     corePlugins: transformPlugins(plugins || defaultPlugins),
     theme: {
-      screens: generateScreens(devices),
-      colors: generateColors(colors),
-      borderRadius,
-      spacing,
+      extend: {
+        screens: generateScreens(devices),
+        colors: generateColors(colors),
+        borderRadius,
+        spacing,
+      },
       ...theme,
     },
-    variants
+    variants,
   };
 }
 

@@ -118,10 +118,10 @@ ${componentDefinitions}
 }
 
 export function generateConfig(definitions) {
-  const { borderRadius, colors, devices, spacing, plugins, preset, variants = {}, theme = {} } = definitions;
+  const { borderRadius, colors, devices, spacing, plugins, presets, variants = {}, theme = {} } = definitions;
 
   return {
-    ...(Array.isArray(preset) && { preset: preset.map(generateConfig) } || {}),
+    ...(Array.isArray(presets) && { presets: presets.map(generateConfig) } || {}),
     corePlugins: transformPlugins(plugins || defaultPlugins),
     theme: {
       screens: generateScreens(devices),

@@ -119,21 +119,34 @@ ${componentDefinitions}
 }
 
 export function generateConfig(definitions) {
-  const { borderRadius, colors, devices, spacing, plugins, presets, variants = {}, theme = {} } = definitions;
+  const {
+    borderRadius,
+    colors: _colors,
+    devices,
+    spacing,
+    plugins,
+    presets,
+    variants = null,
+    theme = null,
+  } = definitions;
+
+  const screens = generateScreens(devices);
+  const colors = generateColors(_colors);
+  const toObject = (o) => o || {};
 
   return resolveConfig({
-    ...((Array.isArray(presets) && { presets: presets.map(generateConfig) }) || {}),
-    corePlugins: transformPlugins(plugins || defaultPlugins),
+    corePlugins: transformPlugins(plugins || defaultPlugins).sort(),
+    ...toObject(Array.isArray(presets) && { presets: presets.map(generateConfig) }),
+    ...toObject(variants && { variants }),
     theme: {
       extend: {
-        screens: generateScreens(devices),
-        colors: generateColors(colors),
-        borderRadius,
-        spacing,
+        ...toObject(screens && { screens }),
+        ...toObject(colors && { colors }),
+        ...toObject({ borderRadius }),
+        ...toObject({ spacing }),
       },
-      ...theme,
+      ...toObject(theme),
     },
-    variants,
   });
 }
 

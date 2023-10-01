@@ -2,7 +2,7 @@ import tailwind from 'tailwindcss';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
-import resolveConfig from 'tailwindcss/resolveConfig';
+import resolveConfig from 'tailwindcss/resolveConfig.js';
 import { defaultPlugins, allPlugins } from './constants.mjs';
 
 const commentSeparator = '//';

@@ -9,7 +9,7 @@
   <body class="page">
     <div class="editor">
       <div class="editor__toolbar">
-        <input type="checkbox" data-action="autosave" />
+        <input type="checkbox" data-action="autosave" checked />
         <button class="btn btn-primary" data-action="save">Save</button>
         <button class="btn btn-secondary" data-action="compile">Compile</button>
       </div>
@@ -86,6 +86,7 @@
           window.autoSave && debouncedSave();
         });
         window.editor = editor;
+        window.autoSave = true;
       });
     </script>
   </body>

@@ -132,20 +132,21 @@ export function generateConfig(definitions) {
 
   const screens = generateScreens(devices);
   const colors = generateColors(_colors);
-  const toObject = (o) => o || {};
+  const corePlugins = plugins && transformPlugins(plugins === 'default' ? defaultPlugins : plugins).sort()
+  const _ = (o) => o || {};
 
   return resolveConfig({
-    corePlugins: transformPlugins(plugins || defaultPlugins).sort(),
-    ...toObject(Array.isArray(presets) && { presets: presets.map(generateConfig) }),
-    ...toObject(variants && { variants }),
+    ..._(corePlugins && { corePlugins }),
+    ..._(Array.isArray(presets) && { presets: presets.map(generateConfig) }),
+    ..._(variants && { variants }),
     theme: {
       extend: {
-        ...toObject(screens && { screens }),
-        ...toObject(colors && { colors }),
-        ...toObject(borderRadius && { borderRadius }),
-        ...toObject(spacing && { spacing }),
+        ..._(screens && { screens }),
+        ..._(colors && { colors }),
+        ..._(borderRadius && { borderRadius }),
+        ..._(spacing && { spacing }),
       },
-      ...toObject(theme),
+      ..._(theme),
     },
   });
 }

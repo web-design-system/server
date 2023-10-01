@@ -1,38 +1,38 @@
-import { createServer } from "node:http";
-import { existsSync, createReadStream } from "node:fs";
-import { join, dirname } from "node:path";
-import { generatePreset } from "./presets.mjs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import Yaml from "yaml";
+import { createServer } from 'node:http';
+import { existsSync, createReadStream } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { generatePreset } from './presets.mjs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import Yaml from 'yaml';
 
 const CWD = process.cwd();
 
 async function onRequest(request, response) {
-  const url = new URL(request.url, "http://localhost");
-  const parts = url.pathname.slice(1).split("/");
+  const url = new URL(request.url, 'http://localhost');
+  const parts = url.pathname.slice(1).split('/');
   const [part, ...args] = parts;
-  const route = request.method + " /" + part;
+  const route = request.method + ' /' + part;
 
   switch (route) {
-    case "GET /":
-      return createReadStream("./index.html").pipe(response);
+    case 'GET /':
+      return createReadStream('./index.html').pipe(response);
 
-    case "GET /edit":
-      return createReadStream("./editor.html").pipe(response);
+    case 'GET /edit':
+      return createReadStream('./editor.html').pipe(response);
 
-    case "GET /assets":
+    case 'GET /assets':
       return getAsset(args, response);
 
-    case "GET /preset":
+    case 'GET /preset':
       return getPreset(args, response);
 
-    case "POST /generate":
+    case 'POST /generate':
       return generate(request, response);
 
-    case "POST /compile":
+    case 'POST /compile':
       return compilePreset(args, response);
 
-    case "POST /preset":
+    case 'POST /preset':
       return savePreset(args, request, response);
 
     default:
@@ -46,7 +46,7 @@ async function ensureFolder(folder) {
 
 function notFound(response) {
   response.writeHead(404);
-  response.end("Page not found");
+  response.end('Page not found');
 }
 
 async function savePreset(args, request, response) {
@@ -55,14 +55,14 @@ async function savePreset(args, request, response) {
 
   try {
     if (!(name && input)) {
-      throw new Error("Missing name or input.\nPOST /update/:name");
+      throw new Error('Missing name or input.\nPOST /update/:name');
     }
 
     Yaml.parse(input);
-    const inputPath = join(CWD, "systems", name + ".yml");
+    const inputPath = join(CWD, 'systems', name + '.yml');
     await ensureFolder(dirname(inputPath));
-    await writeFile(inputPath, input, "utf-8");
-    response.end("OK");
+    await writeFile(inputPath, input, 'utf-8');
+    response.end('OK');
   } catch (error) {
     console.log('Failed to update' + name, error);
     response.writeHead(400);
@@ -72,7 +72,7 @@ async function savePreset(args, request, response) {
 
 async function getAsset(args, response) {
   const name = sanitise(args[0]);
-  const path = join(CWD, "presets", name);
+  const path = join(CWD, 'presets', name);
 
   if (existsSync(path)) {
     createReadStream(path).pipe(response);
@@ -84,7 +84,7 @@ async function getAsset(args, response) {
 
 async function getPreset(args, response) {
   const name = sanitise(args[0]);
-  const path = join(CWD, "systems", name + ".yml");
+  const path = join(CWD, 'systems', name + '.yml');
 
   if (existsSync(path)) {
     createReadStream(path).pipe(response);
@@ -103,36 +103,32 @@ async function compilePreset(args, response) {
   }
 
   const start = Date.now();
-  console.log("Generating " + name);
-  const json = await loadChain(preset);
-  const output = await generatePreset(json, response);
+  console.log('Generating ' + name);
+  const presetChain = await loadChain(preset);
+  const output = await generatePreset(presetChain, response);
 
   if (output.error) {
     console.log(output.error);
     response.writeHead(500);
-    response.end("Failed to compile " + name + ":\n" + String(output.error));
+    response.end('Failed to compile ' + name + ':\n' + String(output.error));
     return;
   }
 
-  const { config, definitions, map, css } = output;
-  const basePath = join(CWD, "presets", name);
-  await writeFile(basePath + ".conf.cjs", config);
-  await writeFile(basePath + ".mjs", definitions);
-  await writeFile(basePath + ".css", css);
-
-  if (map) {
-    await writeFile(basePath + ".css.map", map);
-  }
+  const { json, css } = output;
+  const basePath = join(CWD, 'presets', name);
+  await writeFile(basePath + '.conf.cjs', 'module.exports = ' + json);
+  await writeFile(basePath + '.mjs', 'export default ' + json);
+  await writeFile(basePath + '.css', css);
 
   console.log('Finished in ' + (Date.now() - start) + 'ms');
-  response.end("OK");
+  response.end('OK');
 }
 
 async function generate(request, response) {
   try {
     let input = await readStream(request);
 
-    if (input.trim().startsWith("{")) {
+    if (input.trim().startsWith('{')) {
       input = JSON.parse(input);
     } else {
       input = Yaml.parse(input);
@@ -141,14 +137,19 @@ async function generate(request, response) {
     const output = await generatePreset(input);
 
     if (output.error) {
-      throw output.error;
+      response.writeHead(400);
+      response.end({
+        error: String(output.error),
+        json: output.json,
+      });
+      return;
     }
 
     response.end(JSON.stringify(output, null, 2));
   } catch (error) {
     console.log(error);
     response.writeHead(400);
-    response.end("Invalid preset definition: " + String(error));
+    response.end('Invalid preset definition: ' + String(error));
   }
 }
 
@@ -157,13 +158,13 @@ async function generate(request, response) {
  * @returns {Promise<object|null>} preset
  */
 async function loadPreset(name) {
-  const path = join(CWD, "systems", name + ".yml");
+  const path = join(CWD, 'systems', name + '.yml');
 
   if (!existsSync(path)) {
     return null;
   }
 
-  const input = await readFile(path, "utf-8");
+  const input = await readFile(path, 'utf-8');
   return Yaml.parse(input);
 }
 
@@ -190,7 +191,7 @@ async function loadChain(preset) {
  * @param {String} input
  */
 function sanitise(input) {
-  return String(input).replace(/[.]{2,}/g, ".");
+  return String(input).replace(/[.]{2,}/g, '.');
 }
 
 /**
@@ -201,12 +202,12 @@ function readStream(input) {
   return new Promise((resolve) => {
     const chunks = [];
 
-    input.on("data", (c) => chunks.push(c));
-    input.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
+    input.on('data', (c) => chunks.push(c));
+    input.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
   });
 }
 
 const server = createServer((r, s) => onRequest(r, s));
 server.listen(Number(process.env.PORT), () => {
-  console.log("Started on 127.0.0.1:" + process.env.PORT);
+  console.log('Started on 127.0.0.1:' + process.env.PORT);
 });

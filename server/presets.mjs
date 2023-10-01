@@ -140,23 +140,17 @@ export function generateConfig(definitions) {
 export async function generatePreset(definitions) {
   const parsed = parseDefinitions(definitions);
   const tailwindConfig = generateConfig(parsed);
-  const { sizes, components, colors, spacing, devices } = parsed;
-
-  const config = 'module.exports = ' + JSON.stringify(tailwindConfig, null, 2);
-  const json = 'export default ' + JSON.stringify({ sizes, colors, spacing, devices }, null, 2);
-  const css = generateCssTemplate(components);
+  const json = JSON.stringify(tailwindConfig, null, 2);
+  const input = generateCssTemplate(parsed.components);
   const plugins = [tailwind(tailwindConfig), autoprefixer(), definitions.minify && cssnano()].filter(Boolean);
   const processor = postcss(...plugins);
-  try {
-    const output = await processor.process(css, { from: '/web-design-system.css', to: '/index.css' });
 
-    return {
-      error: null,
-      css: output.css,
-      config,
-      definitions: json,
-    };
+  try {
+    const output = await processor.process(input, { from: '/web-design-system.css', to: '/index.css' });
+    const { css } = output;
+
+    return { error: null, css, json };
   } catch (error) {
-    return { error };
+    return { error, css: '', json: '' };
   }
 }

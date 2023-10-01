@@ -73,7 +73,7 @@ function generateScreens(devices) {
   };
 }
 
-function generateColors(colors) {
+function generateColors({colors}) {
   if (!colors) {
     return;
   }
@@ -125,14 +125,13 @@ function combinePlugins(preset, stack = []) {
 
   stack.unshift(preset.corePlugins || (preset.plugins === 'default' ? defaultPlugins : preset.plugins) || []);
 
-  const combined = stack.filter(Boolean).flat().sort();
-  return [...new Set(combined)];
+  const combined = stack.filter(Boolean).flat();
+  return [...new Set(combined)].sort();
 }
 
 export function generateConfig(preset) {
   const {
     borderRadius,
-    colors: _colors,
     devices,
     spacing,
     presets,
@@ -141,7 +140,7 @@ export function generateConfig(preset) {
   } = preset;
 
   const screens = generateScreens(devices);
-  const colors = generateColors(_colors);
+  const colors = generateColors(preset);
   const corePlugins = transformPlugins(combinePlugins(preset));
   const _ = (o) => o || {};
 

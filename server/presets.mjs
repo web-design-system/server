@@ -124,7 +124,9 @@ function combinePlugins(preset, stack = []) {
   }
 
   stack.unshift(preset.corePlugins || (preset.plugins === 'default' ? defaultPlugins : preset.plugins) || []);
-  return stack.filter(Boolean).flat();
+
+  const combined = stack.filter(Boolean).flat().sort();
+  return [...new Set(combined)];
 }
 
 export function generateConfig(preset) {

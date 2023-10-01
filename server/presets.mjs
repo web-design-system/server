@@ -151,6 +151,6 @@ export async function generatePreset(definitions) {
 
     return { error: null, css, json };
   } catch (error) {
-    return { error, css: '', json: '' };
+    return { error, css: '', json };
   }
 }

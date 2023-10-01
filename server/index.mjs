@@ -108,9 +108,16 @@ async function compilePreset(args, response) {
   const output = await generatePreset(presetChain, response);
 
   if (output.error) {
-    console.log(output.error);
+    const { error } = output;
+    console.log(error);
     response.writeHead(500);
-    response.end(JSON.stringify(output));
+    response.end(
+      JSON.stringify({
+        error: String(error),
+        source: error.source,
+        json: output.json,
+      }),
+    );
     return;
   }
 

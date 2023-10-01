@@ -146,7 +146,7 @@ async function generate(request, response) {
 
     response.end(JSON.stringify(output, null, 2));
   } catch (error) {
-    console.log(error, input);
+    console.log(error);
     response.writeHead(400);
     response.end("Invalid preset definition: " + String(error));
   }

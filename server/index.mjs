@@ -110,7 +110,7 @@ async function compilePreset(args, response) {
   if (output.error) {
     console.log(output.error);
     response.writeHead(500);
-    response.end('Failed to compile ' + name + ':\n' + String(output.error));
+    response.end('Failed to compile ' + name + ':\n' + JSON.stringify(output));
     return;
   }
 

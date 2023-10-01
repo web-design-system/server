@@ -118,25 +118,33 @@ ${componentDefinitions}
   return css;
 }
 
-export function generateConfig(definitions) {
+function combinePlugins(preset, stack = []) {
+  if (preset.presets) {
+    preset.presets.forEach((p) => combinePlugins(p, stack));
+  }
+
+  stack.unshift(preset.corePlugins || (preset.plugins === 'default' ? defaultPlugins : preset.plugins) || []);
+  return stack.filter(Boolean).flat();
+}
+
+export function generateConfig(preset) {
   const {
     borderRadius,
     colors: _colors,
     devices,
     spacing,
-    plugins,
     presets,
     variants = null,
     theme = null,
-  } = definitions;
+  } = preset;
 
   const screens = generateScreens(devices);
   const colors = generateColors(_colors);
-  const corePlugins = plugins && transformPlugins(plugins === 'default' ? defaultPlugins : plugins).sort()
+  const corePlugins = transformPlugins(combinePlugins(preset));
   const _ = (o) => o || {};
 
   return resolveConfig({
-    ..._(corePlugins && { corePlugins }),
+    ..._(corePlugins.length && { corePlugins }),
     ..._(Array.isArray(presets) && { presets: presets.map(generateConfig) }),
     ..._(variants && { variants }),
     theme: {

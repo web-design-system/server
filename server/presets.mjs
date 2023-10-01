@@ -142,8 +142,8 @@ export function generateConfig(definitions) {
       extend: {
         ...toObject(screens && { screens }),
         ...toObject(colors && { colors }),
-        ...toObject({ borderRadius }),
-        ...toObject({ spacing }),
+        ...toObject(borderRadius && { borderRadius }),
+        ...toObject(spacing && { spacing }),
       },
       ...toObject(theme),
     },

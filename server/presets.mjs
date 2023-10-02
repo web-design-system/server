@@ -15,16 +15,20 @@ const definitionSeparator = ':';
 const getPresetPath = (name) => join(CWD, 'systems', name + '.yml');
 
 function transformPlugins(list) {
-  return !Array.isArray(list)
-    ? []
-    : list.flatMap((next) => {
-        if (next.endsWith('*')) {
-          const stem = next.slice(0, -1);
-          return allPlugins.filter((p) => p.startsWith(stem));
-        }
+  if (!Array.isArray(list)) {
+    return [];
+  }
 
-        return next;
-      });
+  const all = list.flatMap((next) => {
+    if (next.endsWith('*')) {
+      const stem = next.slice(0, -1);
+      return allPlugins.filter((p) => p.startsWith(stem));
+    }
+
+    return next;
+  });
+
+  return [...new Set(all)];
 }
 
 function transformText(input) {
@@ -130,7 +134,7 @@ function combinePlugins(preset, stack = []) {
     preset.presets.forEach((p) => combinePlugins(p, stack));
   }
 
-  let plugins = preset.plugins || [];
+  let plugins = preset.corePlugins || [];
 
   if (plugins === 'default') {
     plugins = defaultPlugins;

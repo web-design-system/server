@@ -175,7 +175,7 @@ export function generateConfig(preset) {
   const presets = combinePresets(preset)
   const _ = (o) => o || {};
 
-  const config = resolveConfig({
+  const config = {
     corePlugins,
     ...(presets.length ? { presets: presets.map(generateConfig) } : {}),
     ..._(variants && { variants }),
@@ -194,11 +194,9 @@ export function generateConfig(preset) {
       },
       ..._(theme),
     },
-  });
+  };
 
-  config.presets = [];
-
-  return config;
+  return preset.resolve ? resolveConfig(config) : config;
 }
 
 export async function generatePreset(definitions) {

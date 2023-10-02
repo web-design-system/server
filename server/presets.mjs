@@ -144,6 +144,10 @@ function combinePlugins(preset, stack = []) {
     plugins = ['*'];
   }
 
+  if (plugins === 'none') {
+    plugins = [];
+  }
+
   stack.unshift(plugins);
 
   return [...new Set(stack.flat())].sort();

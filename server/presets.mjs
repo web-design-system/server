@@ -157,7 +157,7 @@ export function generateConfig(preset) {
   const corePlugins = transformPlugins(combinePlugins(preset));
   const _ = (o) => o || {};
 
-  return resolveConfig({
+  const config = resolveConfig({
     ..._(corePlugins.length && { corePlugins }),
     ..._(Array.isArray(presets) && { presets: presets.map(generateConfig) }),
     ..._(variants && { variants }),
@@ -171,6 +171,10 @@ export function generateConfig(preset) {
       ..._(theme),
     },
   });
+
+  delete config.presets;
+
+  return config;
 }
 
 export async function generatePreset(definitions) {

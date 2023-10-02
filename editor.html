@@ -52,7 +52,15 @@
           language: 'yaml',
           automaticLayout: true,
         });
+      });
 
+      window.editor = editor;
+      window.autoSave = true;
+    </script>
+    <script type="module">
+      import { encode } from 'https://yaml.jsfn.run/index.mjs';
+
+      window.addEventListener('DOMContentLoaded', () => {
         const save = () =>
           fetch('/preset/' + name, {
             method: 'POST',
@@ -67,7 +75,7 @@
             method: 'POST',
           });
 
-          output.innerText = JSON.stringify(await req.json(), null, 2);
+          output.innerText = await encode(await req.json());
         };
 
         const toggleAutoSave = (event) => {
@@ -96,8 +104,6 @@
         editor.onDidChangeModelContent(() => {
           window.autoSave && debouncedSave();
         });
-        window.editor = editor;
-        window.autoSave = true;
       });
     </script>
   </body>

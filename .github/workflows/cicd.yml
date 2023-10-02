@@ -3,6 +3,11 @@ on:
   push:
     branches:
       - main
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release:
     uses: cloud-cli/workflows/.github/workflows/docker-ghcr-build.yml@main

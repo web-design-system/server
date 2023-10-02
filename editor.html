@@ -34,15 +34,6 @@
         },
       });
 
-      function debounce(fn, wait) {
-        let timeout;
-
-        return (...args) => {
-          clearTimeout(timeout);
-          timeout = setTimeout(() => fn.apply(this, args), wait);
-        };
-      }
-
       require(['vs/editor/editor.main'], async function () {
         const [_, name] = location.pathname.slice(1).split('/');
         const source = await fetch('/preset/' + name);
@@ -59,6 +50,16 @@
     </script>
     <script type="module">
       import { encode } from 'https://yaml.jsfn.run/index.mjs';
+
+      const [_, name] = location.pathname.slice(1).split('/');
+      function debounce(fn, wait) {
+        let timeout;
+
+        return (...args) => {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => fn.apply(this, args), wait);
+        };
+      }
 
       window.addEventListener('DOMContentLoaded', () => {
         const save = () =>

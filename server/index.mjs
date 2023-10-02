@@ -1,8 +1,8 @@
 import { createServer } from 'node:http';
 import { existsSync, createReadStream } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { generatePreset } from './presets.mjs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { generatePreset, loadPreset, savePreset, loadChain, readPreset } from './presets.mjs';
+import { writeFile } from 'node:fs/promises';
 import Yaml from 'yaml';
 
 const CWD = process.cwd();
@@ -21,27 +21,23 @@ async function onRequest(request, response) {
       return createReadStream('./editor.html').pipe(response);
 
     case 'GET /assets':
-      return getAsset(args, response);
+      return onReadAsset(args, response);
 
     case 'GET /preset':
-      return getPreset(args, response);
+      return onReadPreset(args, response);
 
     case 'POST /generate':
-      return generate(request, response);
+      return onGenerate(request, response);
 
     case 'POST /compile':
-      return compilePreset(args, response);
+      return onCompile(args, response);
 
     case 'POST /preset':
-      return savePreset(args, request, response);
+      return onSave(args, request, response);
 
     default:
       notFound(response);
   }
-}
-
-async function ensureFolder(folder) {
-  return existsSync(folder) || (await mkdir(folder, { recursive: true }));
 }
 
 function notFound(response) {
@@ -49,7 +45,7 @@ function notFound(response) {
   response.end('Page not found');
 }
 
-async function savePreset(args, request, response) {
+async function onSave(args, request, response) {
   const input = await readStream(request);
   const name = sanitise(args[0]);
 
@@ -59,9 +55,7 @@ async function savePreset(args, request, response) {
     }
 
     Yaml.parse(input);
-    const inputPath = join(CWD, 'systems', name + '.yml');
-    await ensureFolder(dirname(inputPath));
-    await writeFile(inputPath, input, 'utf-8');
+    savePreset(name, input);
     response.end('OK');
   } catch (error) {
     console.log('Failed to update' + name, error);
@@ -70,7 +64,7 @@ async function savePreset(args, request, response) {
   }
 }
 
-async function getAsset(args, response) {
+async function onReadAsset(args, response) {
   const name = sanitise(args[0]);
   const path = join(CWD, 'presets', name);
 
@@ -82,19 +76,18 @@ async function getAsset(args, response) {
   notFound(response);
 }
 
-async function getPreset(args, response) {
+async function onReadPreset(args, response) {
   const name = sanitise(args[0]);
-  const path = join(CWD, 'systems', name + '.yml');
+  const preset = readPreset(name);
 
-  if (existsSync(path)) {
-    createReadStream(path).pipe(response);
-    return;
+  if (preset) {
+    return response.end(preset);
   }
 
   notFound(response);
 }
 
-async function compilePreset(args, response) {
+async function onCompile(args, response) {
   const name = sanitise(args[0]);
   const preset = await loadPreset(name);
 
@@ -105,7 +98,7 @@ async function compilePreset(args, response) {
   const start = Date.now();
   console.log('Generating ' + name);
   const presetChain = await loadChain(preset);
-  const output = await generatePreset(presetChain, response);
+  const output = await generatePreset(presetChain);
 
   if (output.error) {
     const { error } = output;
@@ -131,7 +124,7 @@ async function compilePreset(args, response) {
   response.end('OK');
 }
 
-async function generate(request, response) {
+async function onGenerate(request, response) {
   try {
     let input = await readStream(request);
 
@@ -141,7 +134,8 @@ async function generate(request, response) {
       input = Yaml.parse(input);
     }
 
-    const output = await generatePreset(input);
+    const chain = await loadChain(input);
+    const output = await generatePreset(chain);
 
     if (output.error) {
       response.writeHead(400);
@@ -158,40 +152,6 @@ async function generate(request, response) {
     response.writeHead(400);
     response.end('Invalid preset definition: ' + String(error));
   }
-}
-
-/**
- * @param {String} name
- * @returns {Promise<object|null>} preset
- */
-async function loadPreset(name) {
-  const path = join(CWD, 'systems', name + '.yml');
-
-  if (!existsSync(path)) {
-    return null;
-  }
-
-  const input = await readFile(path, 'utf-8');
-  return Yaml.parse(input);
-}
-
-/**
- * @param {object} preset
- * @returns {Promise<object>} preset chain
- */
-async function loadChain(preset) {
-  if (!preset.extend) {
-    return preset;
-  }
-
-  const next = await loadPreset(preset.extend);
-  preset.presets = [next, ...(preset.presets || [])].filter(Boolean);
-
-  if (next?.extend) {
-    await loadChain(next);
-  }
-
-  return preset;
 }
 
 /**

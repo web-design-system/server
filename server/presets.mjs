@@ -1,15 +1,21 @@
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { join, dirname } from 'node:path';
 import tailwind from 'tailwindcss';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
 import resolveConfig from 'tailwindcss/resolveConfig.js';
+import Yaml from 'yaml';
 import { defaultPlugins, allPlugins } from './constants.mjs';
+import { existsSync } from 'node:fs';
 
+const CWD = process.cwd();
 const commentSeparator = '//';
 const definitionSeparator = ':';
+const getPresetPath = (name) => join(CWD, 'systems', name + '.yml');
 
-const transformPlugins = (list) =>
-  !Array.isArray(list)
+function transformPlugins(list) {
+  return !Array.isArray(list)
     ? []
     : list.flatMap((next) => {
         if (next.endsWith('*')) {
@@ -19,6 +25,7 @@ const transformPlugins = (list) =>
 
         return next;
       });
+}
 
 function transformText(input) {
   if (!input) {
@@ -73,7 +80,7 @@ function generateScreens(devices) {
   };
 }
 
-function generateColors({colors}) {
+function generateColors({ colors }) {
   if (!colors) {
     return;
   }
@@ -123,21 +130,23 @@ function combinePlugins(preset, stack = []) {
     preset.presets.forEach((p) => combinePlugins(p, stack));
   }
 
-  stack.unshift(preset.corePlugins || (preset.plugins === 'default' ? defaultPlugins : preset.plugins) || []);
+  let plugins = preset.plugins || [];
 
-  const combined = stack.filter(Boolean).flat();
-  return [...new Set(combined)].sort();
+  if (plugins === 'default') {
+    plugins = defaultPlugins;
+  }
+
+  if (plugins === 'all') {
+    plugins = ['*'];
+  }
+
+  stack.unshift(plugins);
+
+  return [...new Set(stack.flat())].sort();
 }
 
 export function generateConfig(preset) {
-  const {
-    borderRadius,
-    devices,
-    spacing,
-    presets,
-    variants = null,
-    theme = null,
-  } = preset;
+  const { borderRadius, devices, spacing, presets, variants = null, theme = null } = preset;
 
   const screens = generateScreens(devices);
   const colors = generateColors(preset);
@@ -176,4 +185,52 @@ export async function generatePreset(definitions) {
   } catch (error) {
     return { error, css: '', json };
   }
+}
+
+/**
+ * @param {String} name
+ * @returns {Promise<object|null>} preset
+ */
+export async function loadPreset(name) {
+  const input = readPreset(name);
+  return (input && Yaml.parse(input)) || null;
+}
+
+export async function readPreset(name) {
+  const path = getPresetPath(name);
+
+  if (!existsSync(path)) {
+    return '';
+  }
+
+  return await readFile(path, 'utf-8');
+}
+
+/**
+ * @param {object} preset
+ * @returns {Promise<object>} preset chain
+ */
+export async function loadChain(preset) {
+  if (!preset.extend) {
+    return preset;
+  }
+
+  const next = await loadPreset(preset.extend);
+  preset.presets = [next, ...(preset.presets || [])].filter(Boolean);
+
+  if (next?.extend) {
+    await loadChain(next);
+  }
+
+  return preset;
+}
+
+export async function savePreset(name, preset) {
+  const path = getPresetPath(name);
+  await ensureFolder(dirname(path));
+  await writeFile(path, preset, 'utf-8');
+}
+
+async function ensureFolder(folder) {
+  return existsSync(folder) || (await mkdir(folder, { recursive: true }));
 }

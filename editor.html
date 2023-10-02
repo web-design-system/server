@@ -18,7 +18,6 @@
   <body class="wds-page">
     <div class="wds-editor">
       <div class="wds-editor__toolbar">
-        <input type="checkbox" data-action="autosave" checked />
         <button class="wds-btn wds-btn__primary" data-action="save">Save</button>
         <button class="wds-btn wds-btn__secondary" data-action="compile">Compile</button>
       </div>
@@ -43,10 +42,9 @@
           language: 'yaml',
           automaticLayout: true,
         });
-      });
 
-      window.editor = editor;
-      window.autoSave = true;
+        window.onEditorLoad(editor);
+      });
     </script>
     <script type="module">
       import { encode } from 'https://yaml.jsfn.run/index.mjs';
@@ -61,7 +59,7 @@
         };
       }
 
-      window.addEventListener('DOMContentLoaded', () => {
+      window.onEditorLoad = (editor) => {
         const save = () =>
           fetch('/preset/' + name, {
             method: 'POST',
@@ -79,14 +77,9 @@
           output.innerText = await encode(await req.json());
         };
 
-        const toggleAutoSave = (event) => {
-          window.autoSave = event.target.checked;
-        };
-
         const actions = {
           save,
           compile,
-          autosave: toggleAutoSave,
         };
 
         document.querySelectorAll('[data-action]').forEach((c) => {
@@ -102,10 +95,8 @@
         });
 
         const debouncedSave = debounce(save, 2000);
-        editor.onDidChangeModelContent(() => {
-          window.autoSave && debouncedSave();
-        });
-      });
+        editor.onDidChangeModelContent(() => debouncedSave());
+      };
     </script>
   </body>
 </html>

@@ -172,7 +172,7 @@ export function generateConfig(preset) {
     },
   });
 
-  delete config.presets;
+  config.presets = [];
 
   return config;
 }

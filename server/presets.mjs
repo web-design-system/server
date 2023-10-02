@@ -166,7 +166,7 @@ export function generateConfig(preset) {
   const _ = (o) => o || {};
 
   const config = resolveConfig({
-    ..._(corePlugins.length && { corePlugins }),
+    corePlugins,
     ..._(Array.isArray(presets) && { presets: presets.map(generateConfig) }),
     ..._(variants && { variants }),
     theme: {

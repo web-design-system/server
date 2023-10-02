@@ -242,10 +242,12 @@ export async function savePresetAssets(name, preset) {
   await writeFile(basePath + '.css', css);
 }
 
-export async function loadPresetAsset(name) {
+export function loadPresetAsset(name) {
   const path = join(CWD, 'presets', name);
 
   if (existsSync(path)) {
     return createReadStream(path);
   }
+
+  return null;
 }

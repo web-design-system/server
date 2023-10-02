@@ -145,6 +145,10 @@ function combinePlugins(preset, stack = []) {
   return [...new Set(stack.flat())].sort();
 }
 
+async function ensureFolder(folder) {
+  return existsSync(folder) || (await mkdir(folder, { recursive: true }));
+}
+
 export function generateConfig(preset) {
   const { borderRadius, devices, spacing, presets, variants = null, theme = null } = preset;
 
@@ -192,7 +196,7 @@ export async function generatePreset(definitions) {
  * @returns {Promise<object|null>} preset
  */
 export async function loadPreset(name) {
-  const input = readPreset(name);
+  const input = await readPreset(name);
   return (input && Yaml.parse(input)) || null;
 }
 
@@ -229,10 +233,6 @@ export async function savePreset(name, preset) {
   const path = getPresetPath(name);
   await ensureFolder(dirname(path));
   await writeFile(path, preset, 'utf-8');
-}
-
-async function ensureFolder(folder) {
-  return existsSync(folder) || (await mkdir(folder, { recursive: true }));
 }
 
 export async function savePresetAssets(name, preset) {

@@ -172,19 +172,25 @@ export function generateConfig(preset) {
   const screens = generateScreens(devices);
   const colors = generateColors(preset);
   const corePlugins = transformPlugins(combinePlugins(preset));
-  const presets = combinePresets(preset).map(generateConfig);
+  const presets = combinePresets(preset)
   const _ = (o) => o || {};
 
   const config = resolveConfig({
     corePlugins,
-    presets,
+    ...(presets.length ? { presets: presets.map(generateConfig) } : {}),
     ..._(variants && { variants }),
     theme: {
+      ..._(screens && { screens }),
+      ..._(colors && { colors }),
+      ..._(borderRadius && { borderRadius }),
+      ..._(spacing && { spacing }),
+
       extend: {
-        ..._(screens && { screens }),
-        ..._(colors && { colors }),
-        ..._(borderRadius && { borderRadius }),
-        ..._(spacing && { spacing }),
+        ..._(screens?.extend && { screens: screens.extend }),
+        ..._(colors?.extend && { colors: colors.extend }),
+        ..._(borderRadius?.extend && { borderRadius: borderRadius.extend }),
+        ..._(spacing?.extend && { spacing: spacing.extend }),
+        ..._(theme?.extend),
       },
       ..._(theme),
     },

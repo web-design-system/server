@@ -11,6 +11,8 @@ import {
 } from './presets.mjs';
 import Yaml from 'yaml';
 
+const toJSON = (o) => JSON.stringify(o, null, 2);
+
 async function onRequest(request, response) {
   const url = new URL(request.url, 'http://localhost');
   const parts = url.pathname.slice(1).split('/');
@@ -46,7 +48,7 @@ async function onRequest(request, response) {
 
 function notFound(response) {
   response.writeHead(404);
-  response.end('Page not found');
+  response.end(toJSON({ error: 'Not found' }));
 }
 
 async function onSave(args, request, response) {
@@ -60,11 +62,11 @@ async function onSave(args, request, response) {
 
     Yaml.parse(input);
     savePreset(name, input);
-    response.end('OK');
+    response.end();
   } catch (error) {
     console.log('Failed to update' + name, error);
     response.writeHead(400);
-    response.end(String(error));
+    response.end(toJSON({ error: String(error) }));
   }
 }
 
@@ -109,7 +111,7 @@ async function onCompile(args, response) {
     console.log(error);
     response.writeHead(500);
     response.end(
-      JSON.stringify({
+      toJSON({
         error: String(error),
         source: error.source,
         json: output.json,
@@ -120,7 +122,7 @@ async function onCompile(args, response) {
 
   await savePresetAssets(name, output);
   console.log('Finished in ' + (Date.now() - start) + 'ms');
-  response.end({ json: output.json });
+  response.end(toJSON({ json: output.json }));
 }
 
 async function onGenerate(request, response) {
@@ -139,7 +141,7 @@ async function onGenerate(request, response) {
     if (output.error) {
       response.writeHead(400);
       response.end(
-        JSON.stringify({
+        toJSON({
           error: String(output.error),
           json: output.json,
         }),
@@ -151,7 +153,7 @@ async function onGenerate(request, response) {
   } catch (error) {
     console.log(error);
     response.writeHead(400);
-    response.end('Invalid preset definition: ' + String(error));
+    response.end(toJSON({ error: String(error) }));
   }
 }
 

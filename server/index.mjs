@@ -138,10 +138,10 @@ async function onGenerate(request, response) {
 
     if (output.error) {
       response.writeHead(400);
-      response.end({
+      response.end(JSON.stringify({
         error: String(output.error),
         json: output.json,
-      });
+      }));
       return;
     }
 

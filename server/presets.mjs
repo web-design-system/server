@@ -153,21 +153,31 @@ function combinePlugins(preset, stack = []) {
   return [...new Set(stack.flat())].sort();
 }
 
+function combinePresets(preset, stack = []) {
+  if (preset.presets) {
+    preset.presets.forEach((p) => combinePreset(p, stack));
+    stack.unshift(preset.presets);
+  }
+
+  return stack.flat().filter(Boolean);
+}
+
 async function ensureFolder(folder) {
   return existsSync(folder) || (await mkdir(folder, { recursive: true }));
 }
 
 export function generateConfig(preset) {
-  const { borderRadius, devices, spacing, presets, variants = null, theme = null } = preset;
+  const { borderRadius, devices, spacing, variants = null, theme = null } = preset;
 
   const screens = generateScreens(devices);
   const colors = generateColors(preset);
   const corePlugins = transformPlugins(combinePlugins(preset));
+  const presets = combinePresets(preset).map(generateConfig);
   const _ = (o) => o || {};
 
   const config = resolveConfig({
     corePlugins,
-    ..._(Array.isArray(presets) && { presets: presets.map(generateConfig) }),
+    presets,
     ..._(variants && { variants }),
     theme: {
       extend: {

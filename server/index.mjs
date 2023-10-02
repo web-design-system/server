@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { createReadStream } from "node:fs";
+import { createReadStream } from 'node:fs';
 import {
   generatePreset,
   loadPreset,
@@ -120,7 +120,7 @@ async function onCompile(args, response) {
 
   await savePresetAssets(name, output);
   console.log('Finished in ' + (Date.now() - start) + 'ms');
-  response.end('OK');
+  response.end({ json: output.json });
 }
 
 async function onGenerate(request, response) {
@@ -138,10 +138,12 @@ async function onGenerate(request, response) {
 
     if (output.error) {
       response.writeHead(400);
-      response.end(JSON.stringify({
-        error: String(output.error),
-        json: output.json,
-      }));
+      response.end(
+        JSON.stringify({
+          error: String(output.error),
+          json: output.json,
+        }),
+      );
       return;
     }
 

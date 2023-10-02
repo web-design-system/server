@@ -1,11 +1,14 @@
 import { createServer } from 'node:http';
-import { existsSync, createReadStream } from 'node:fs';
-import { join } from 'node:path';
-import { generatePreset, loadPreset, savePreset, loadChain, readPreset } from './presets.mjs';
-import { writeFile } from 'node:fs/promises';
+import {
+  generatePreset,
+  loadPreset,
+  savePreset,
+  loadChain,
+  readPreset,
+  savePresetAssets,
+  loadPresetAsset,
+} from './presets.mjs';
 import Yaml from 'yaml';
-
-const CWD = process.cwd();
 
 async function onRequest(request, response) {
   const url = new URL(request.url, 'http://localhost');
@@ -66,10 +69,10 @@ async function onSave(args, request, response) {
 
 async function onReadAsset(args, response) {
   const name = sanitise(args[0]);
-  const path = join(CWD, 'presets', name);
+  const asset = loadPresetAsset(name);
 
-  if (existsSync(path)) {
-    createReadStream(path).pipe(response);
+  if (asset) {
+    asset.pipe(response);
     return;
   }
 
@@ -78,7 +81,7 @@ async function onReadAsset(args, response) {
 
 async function onReadPreset(args, response) {
   const name = sanitise(args[0]);
-  const preset = readPreset(name);
+  const preset = await readPreset(name);
 
   if (preset) {
     return response.end(preset);
@@ -114,12 +117,7 @@ async function onCompile(args, response) {
     return;
   }
 
-  const { json, css } = output;
-  const basePath = join(CWD, 'presets', name);
-  await writeFile(basePath + '.conf.cjs', 'module.exports = ' + json);
-  await writeFile(basePath + '.mjs', 'export default ' + json);
-  await writeFile(basePath + '.css', css);
-
+  await savePresetAssets(name, output);
   console.log('Finished in ' + (Date.now() - start) + 'ms');
   response.end('OK');
 }
@@ -174,7 +172,6 @@ function readStream(input) {
   });
 }
 
-const server = createServer((r, s) => onRequest(r, s));
-server.listen(Number(process.env.PORT), () => {
+createServer(onRequest).listen(Number(process.env.PORT), () => {
   console.log('Started on 127.0.0.1:' + process.env.PORT);
 });

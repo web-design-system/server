@@ -61,6 +61,8 @@
 
         const compile = async () => {
           const output = document.getElementById("console");
+          output.innerText = '';
+
           const req = await fetch("/compile/" + name, {
             method: "POST",
           });

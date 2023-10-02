@@ -1,4 +1,5 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { createReadStream, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import tailwind from 'tailwindcss';
 import postcss from 'postcss';
@@ -7,7 +8,6 @@ import cssnano from 'cssnano';
 import resolveConfig from 'tailwindcss/resolveConfig.js';
 import Yaml from 'yaml';
 import { defaultPlugins, allPlugins } from './constants.mjs';
-import { existsSync } from 'node:fs';
 
 const CWD = process.cwd();
 const commentSeparator = '//';
@@ -233,4 +233,19 @@ export async function savePreset(name, preset) {
 
 async function ensureFolder(folder) {
   return existsSync(folder) || (await mkdir(folder, { recursive: true }));
+}
+
+export async function savePresetAssets(name, preset) {
+  const { json, css } = preset;
+  const basePath = join(CWD, 'presets', name);
+  await writeFile(basePath + '.mjs', 'export default ' + json);
+  await writeFile(basePath + '.css', css);
+}
+
+export async function loadPresetAsset(name) {
+  const path = join(CWD, 'presets', name);
+
+  if (existsSync(path)) {
+    return createReadStream(path);
+  }
 }

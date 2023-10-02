@@ -155,7 +155,7 @@ function combinePlugins(preset, stack = []) {
 
 function combinePresets(preset, stack = []) {
   if (preset.presets) {
-    preset.presets.forEach((p) => combinePreset(p, stack));
+    preset.presets.forEach((p) => combinePresets(p, stack));
     stack.unshift(preset.presets);
   }
 

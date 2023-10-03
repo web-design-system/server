@@ -195,8 +195,8 @@ function combinePlugins(preset, stack = []) {
   }
 
   if (preset.corePlugins) {
-    stack.unshift(plugins);
+    stack.unshift(preset.corePlugins);
   }
 
-  return [...new Set(stack.flat())].sort();
+  return [...new Set(stack.flat(2))].sort();
 }

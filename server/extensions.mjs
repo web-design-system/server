@@ -1,4 +1,4 @@
-import { defaultPlugins, allPlugins } from './constants.mjs';
+import { defaultPlugins } from './constants.mjs';
 
 const commentSeparator = '//';
 const definitionSeparator = ':';

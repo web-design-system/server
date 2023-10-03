@@ -90,32 +90,3 @@ function transformText(input) {
     return all;
   }, {});
 }
-
-export function transformPlugins(plugins) {
-  if (plugins === 'all') {
-    return allPlugins;
-  }
-
-  if (plugins === 'none') {
-    return [];
-  }
-
-  if (plugins === 'default') {
-    plugins = defaultPlugins;
-  }
-
-  if (!Array.isArray(plugins)) {
-    return [];
-  }
-
-  const all = plugins.flatMap((next) => {
-    if (next.endsWith('*')) {
-      const stem = next.slice(0, -1);
-      return allPlugins.filter((p) => p.startsWith(stem));
-    }
-
-    return next;
-  });
-
-  return [...new Set(all)];
-}

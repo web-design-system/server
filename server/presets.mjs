@@ -180,5 +180,5 @@ export function transformPlugins(plugins) {
     return next;
   });
 
-  return [...new Set(all)];
+  return [...new Set(all)].sort();
 }

@@ -16,7 +16,8 @@ const toJSON = (o) => JSON.stringify(o, null, 2);
 async function onRequest(request, response) {
   const url = new URL(request.url, 'http://localhost');
   const parts = url.pathname.slice(1).split('/');
-  const [part, ...args] = parts;
+  const [part, ...segments] = parts;
+  const path = segments.map(sanitise).join('/');
   const route = request.method + ' /' + part;
 
   switch (route) {
@@ -27,19 +28,19 @@ async function onRequest(request, response) {
       return createReadStream('./editor.html').pipe(response);
 
     case 'GET /assets':
-      return onReadAsset(args, response);
-
-    case 'GET /preset':
-      return onReadPreset(args, response);
-
-    case 'POST /generate':
-      return onGenerate(request, response);
+      return onReadAsset(path, response);
 
     case 'POST /compile':
-      return onCompile(args, response);
+      return onCompile(path, response);
+
+    case 'GET /preset':
+      return onReadPreset(path, response);
 
     case 'POST /preset':
-      return onSave(args, request, response);
+      return onSave(path, await readStream(request), response);
+
+    case 'POST /generate':
+      return onGenerate(await readStream(request), response);
 
     default:
       notFound(response);
@@ -51,28 +52,24 @@ function notFound(response) {
   response.end(toJSON({ error: 'Not found' }));
 }
 
-async function onSave(args, request, response) {
-  const input = await readStream(request);
-  const name = sanitise(args[0]);
-
+async function onSave(path, input, response) {
   try {
-    if (!(name && input)) {
+    if (!(path && input)) {
       throw new Error('Missing name or input.\nPOST /update/:name');
     }
 
     Yaml.parse(input);
-    savePreset(name, input);
+    savePreset(path, input);
     response.end();
   } catch (error) {
-    console.log('Failed to update' + name, error);
+    console.log('Failed to update' + path, error);
     response.writeHead(400);
     response.end(toJSON({ error: String(error) }));
   }
 }
 
-async function onReadAsset(args, response) {
-  const name = sanitise(args[0]);
-  const asset = loadPresetAsset(name);
+async function onReadAsset(path, response) {
+  const asset = loadPresetAsset(path);
 
   if (asset) {
     asset.pipe(response);
@@ -82,9 +79,8 @@ async function onReadAsset(args, response) {
   notFound(response);
 }
 
-async function onReadPreset(args, response) {
-  const name = sanitise(args[0]);
-  const preset = await readPreset(name);
+async function onReadPreset(path, response) {
+  const preset = await readPreset(path);
 
   if (preset) {
     return response.end(preset);
@@ -93,16 +89,15 @@ async function onReadPreset(args, response) {
   notFound(response);
 }
 
-async function onCompile(args, response) {
-  const name = sanitise(args[0]);
-  const preset = await loadPreset(name);
+async function onCompile(path, response) {
+  const preset = await loadPreset(path);
 
   if (!preset) {
     return notFound(response);
   }
 
   const start = Date.now();
-  console.log('Generating ' + name);
+  console.log('Generating ' + path);
   const presetChain = await loadChain(preset);
   const output = await generatePreset(presetChain);
 
@@ -120,15 +115,13 @@ async function onCompile(args, response) {
     return;
   }
 
-  await savePresetAssets(name, output);
+  await savePresetAssets(path, output);
   console.log('Finished in ' + (Date.now() - start) + 'ms');
   response.end(toJSON({ json: output.json }));
 }
 
-async function onGenerate(request, response) {
+async function onGenerate(input, response) {
   try {
-    let input = await readStream(request);
-
     if (input.trim().startsWith('{')) {
       input = JSON.parse(input);
     } else {

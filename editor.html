@@ -34,7 +34,7 @@
       });
 
       require(['vs/editor/editor.main'], async function () {
-        const [_, name] = location.pathname.slice(1).split('/');
+        const name = location.pathname.replace('/edit/', '');
         const source = await fetch('/preset/' + name);
 
         const editor = monaco.editor.create(document.getElementById('editor'), {
@@ -49,7 +49,7 @@
     <script type="module">
       import { encode } from 'https://yaml.jsfn.run/index.mjs';
 
-      const [_, name] = location.pathname.slice(1).split('/');
+      const name = location.pathname.replace('/edit/', '');
       function debounce(fn, wait) {
         let timeout;
 

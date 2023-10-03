@@ -7,6 +7,7 @@ import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
 import resolveConfig from 'tailwindcss/resolveConfig.js';
 import Yaml from 'yaml';
+import { defaultPlugins, allPlugins } from './constants.mjs';
 
 const CWD = process.cwd();
 const getPresetPath = (name) => join(CWD, 'systems', name + '.yml');
@@ -121,11 +122,11 @@ export async function loadChain(nameOrPreset) {
 
     presets.unshift(next);
   }
-  
+
   if (preset.corePlugins) {
     preset.corePlugins = transformPlugins(preset.corePlugins);
   }
-  
+
   return preset;
 }
 

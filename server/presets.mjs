@@ -121,7 +121,11 @@ export async function loadChain(nameOrPreset) {
 
     presets.unshift(next);
   }
-
+  
+  if (preset.corePlugins) {
+    preset.corePlugins = transformPlugins(preset.corePlugins);
+  }
+  
   return preset;
 }
 

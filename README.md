@@ -25,37 +25,44 @@ Retrieve the YAML definition for a design system
 ## Design System Definitions
 
 ```yaml
-# Device breakpoints
-# From smallest to largest screen
+name: design-system
+description: This is a design system for our website
+minify: true
+resolve: true
 
-devices:
-  phone: 640px
-  tablet: 768px
-  laptop: 1024px
-  desktop: 1280px
+# See all configuration options at https://v2.tailwindcss.com/docs/configuration
 
-# Color pallete
-# Defines all color variants used by text-*, bg-* and other color utilities
-colors: |
-  white: #fff
-  black: #000
-  gray: #333
-  primary: #0af
-  primary-dark: #09e
-  secondary: #f98
-  danger: #ee4444
-  warning: #fbbf24
-  info: #60a5fa
-  success: #10b981
+theme:
+  # Device breakpoints
+  # From smallest to largest screen
+  devices:
+    phone: 640px
+    tablet: 768px
+    laptop: 1024px
+    desktop: 1280px
 
-# Spacing
-# Define spacing values used across padding/margin/gaps, like px-* or mt-*
-# This examples defines p-0, p-1 and p-sm as valid paddings
-spacing:
-  0: 0
-  sm: 0.5rem
-  md: 1rem
-  lg: 2rem
+  # Color pallete
+  # Defines all color variants used by text-*, bg-* and other color utilities
+  colors: |
+    white: #fff
+    black: #000
+    gray: #333
+    primary: #0af
+    primary-dark: #09e
+    secondary: #f98
+    danger: #ee4444
+    warning: #fbbf24
+    info: #60a5fa
+    success: #10b981
+
+  # Spacing
+  # Define spacing values used across padding/margin/gaps, like px-* or mt-*
+  # This examples defines p-0, p-1 and p-sm as valid paddings
+  spacing:
+    0: 0
+    sm: 0.5rem
+    md: 1rem
+    lg: 2rem
 
 # Components
 # Create components to reuse common definitions of styles
@@ -66,155 +73,21 @@ components:
     parts:
       icon: mr-4
 
-# Plugins
+# Core Plugins
 # Explicitly enable Tailwind features using plugins
 # See plugins reference at https://v2.tailwindcss.com/docs/configuration#core-plugins
-# This list includes ALL plugins
-plugins:
-  - preflight
-  - container
-  - accessibility
-  - alignContent
-  - alignItems
-  - alignSelf
-  - animation
-  - appearance
-  - backdropBlur
-  - backdropBrightness
-  - backdropContrast
-  - backdropFilter
-  - backdropGrayscale
-  - backdropHueRotate
-  - backdropInvert
-  - backdropOpacity
-  - backdropSaturate
-  - backdropSepia
-  - backgroundAttachment
-  - backgroundBlendMode
-  - backgroundClip
-  - backgroundColor
-  - backgroundImage
-  - backgroundOpacity
-  - backgroundOrigin
-  - backgroundPosition
-  - backgroundRepeat
-  - backgroundSize
-  - blur
-  - borderCollapse
-  - borderColor
-  - borderOpacity
-  - borderRadius
-  - borderStyle
-  - borderWidth
-  - boxDecorationBreak
-  - boxShadow
-  - boxSizing
-  - brightness
-  - caretColor
-  - clear
-  - content
-  - contrast
-  - cursor
-  - display
-  - divideColor
-  - divideOpacity
-  - divideStyle
-  - divideWidth
-  - dropShadow
-  - fill
-  - filter
-  - flex
-  - flexDirection
-  - flexGrow
-  - flexShrink
-  - flexWrap
-  - float
-  - fontFamily
-  - fontSize
-  - fontSmoothing
-  - fontStyle
-  - fontVariantNumeric
-  - fontWeight
-  - gap
-  - gradientColorStops
-  - grayscale
-  - gridAutoColumns
-  - gridAutoFlow
-  - gridAutoRows
-  - gridColumn
-  - gridColumnEnd
-  - gridColumnStart
-  - gridRow
-  - gridRowEnd
-  - gridRowStart
-  - gridTemplateColumns
-  - gridTemplateRows
-  - height
-  - hueRotate
-  - inset
-  - invert
-  - isolation
-  - justifyContent
-  - justifyItems
-  - justifySelf
-  - letterSpacing
-  - lineHeight
-  - listStylePosition
-  - listStyleType
-  - margin
-  - maxHeight
-  - maxWidth
-  - minHeight
-  - minWidth
-  - mixBlendMode
-  - objectFit
-  - objectPosition
-  - opacity
-  - order
-  - outline
-  - overflow
-  - overscrollBehavior
-  - padding
-  - placeContent
-  - placeholderColor
-  - placeholderOpacity
-  - placeItems
-  - placeSelf
-  - pointerEvents
-  - position
-  - resize
-  - ringColor
-  - ringOffsetColor
-  - ringOffsetWidth
-  - ringOpacity
-  - ringWidth
-  - rotate
-  - saturate
-  - scale
-  - sepia
-  - skew
-  - space
-  - stroke
-  - strokeWidth
-  - tableLayout
-  - textAlign
-  - textColor
-  - textDecoration
-  - textOpacity
-  - textOverflow
-  - textTransform
-  - transform
-  - transformOrigin
-  - transitionDelay
-  - transitionDuration
-  - transitionProperty
-  - transitionTimingFunction
-  - translate
-  - userSelect
-  - verticalAlign
-  - visibility
-  - whitespace
-  - width
-  - wordBreak
-  - zIndex
+
+# Special values here:
+# 'default' for a minimal set
+# 'none' to skip all plugins
+# 'border*' to include all plugins that start with 'border' (use any other plugin name)
+corePlugins: default
+
+presets:
+  - 'import: @acme/internal-styles'
+
+variantOrder: []
+variants:
+  fill: []
+
 ```

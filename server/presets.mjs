@@ -50,10 +50,7 @@ async function ensureFolder(folder) {
 }
 
 export function generateConfig(preset) {
-  if (Array.isArray(preset.extends)) {
-    loadChain(preset);
-  }
-
+  loadChain(preset);
   return preset.resolve ? resolveConfig(preset) : preset;
 }
 
@@ -101,7 +98,7 @@ export async function loadChain(nameOrPreset) {
   let preset = nameOrPreset;
 
   if (typeof nameOrPreset === 'string') {
-    preset = await loadPreset(name);
+    preset = await loadPreset(nameOrPreset);
   }
 
   if (!preset?.extends) {
@@ -116,6 +113,10 @@ export async function loadChain(nameOrPreset) {
     if (next?.extends) {
       await loadChain(next);
       presets.unshift(...next.presets);
+    }
+
+    if (next?.corePlugins) {
+      next.corePlugins = transformPlugins(next.corePlugins);
     }
 
     presets.unshift(next);

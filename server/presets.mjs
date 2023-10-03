@@ -7,96 +7,9 @@ import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
 import resolveConfig from 'tailwindcss/resolveConfig.js';
 import Yaml from 'yaml';
-import { defaultPlugins, allPlugins } from './constants.mjs';
 
 const CWD = process.cwd();
-const commentSeparator = '//';
-const definitionSeparator = ':';
 const getPresetPath = (name) => join(CWD, 'systems', name + '.yml');
-
-function transformPlugins(list) {
-  if (!Array.isArray(list)) {
-    return [];
-  }
-
-  const all = list.flatMap((next) => {
-    if (next.endsWith('*')) {
-      const stem = next.slice(0, -1);
-      return allPlugins.filter((p) => p.startsWith(stem));
-    }
-
-    return next;
-  });
-
-  return [...new Set(all)];
-}
-
-function transformText(input) {
-  if (!input) {
-    return undefined;
-  }
-
-  const source =
-    typeof input === 'string'
-      ? input
-          .trim()
-          .split('\n')
-          .filter(Boolean)
-          .map((line) => {
-            const [left, right] = line.split(definitionSeparator);
-            const [value] = right.split(commentSeparator);
-            return [left, value];
-          })
-      : Object.entries(input);
-
-  return source.reduce((all, next) => {
-    all[String(next[0]).trim()] = String(next[1]).trim();
-    return all;
-  }, {});
-}
-
-function parseDefinitions(definitions) {
-  const { sizes, colors, spacing, devices } = definitions;
-
-  return {
-    ...definitions,
-    sizes: transformText(sizes),
-    colors: transformText(colors),
-    spacing: transformText(spacing),
-    devices: transformText(devices),
-  };
-}
-
-function generateScreens(devices) {
-  if (!devices) {
-    return;
-  }
-
-  const entries = Object.entries(devices).map(([device, string]) => [
-    device,
-    string.startsWith('raw:') ? { raw: string.slice(4) } : string,
-  ]);
-
-  return {
-    portrait: { raw: '(orientation: portrait)' },
-    landscape: { raw: '(orientation: landscape)' },
-    ...Object.fromEntries(entries),
-  };
-}
-
-function generateColors({ colors }) {
-  if (!colors) {
-    return;
-  }
-
-  const entries = Object.entries(colors).map(([key, DEFAULT]) => [key, { DEFAULT }]);
-
-  return {
-    transparent: 'transparent',
-    current: 'currentColor',
-    ...Object.fromEntries(entries),
-  };
-}
 
 function defineComponent(name, def) {
   return [
@@ -111,10 +24,10 @@ function defineComponent(name, def) {
     .join('');
 }
 
-function generateCssTemplate(components) {
-  const componentDefinitions = !components
+function generateCssTemplate(preset) {
+  const componentDefinitions = !preset.components
     ? ''
-    : Object.entries(components)
+    : Object.entries(preset.components)
         .map(([name, def]) => defineComponent(name, def))
         .join('');
 
@@ -124,42 +37,12 @@ function generateCssTemplate(components) {
 
 @layer components {
 ${componentDefinitions}
-}`;
+}
+
+${preset.styles || ''}
+`;
 
   return css;
-}
-
-function combinePlugins(preset, stack = []) {
-  if (preset.presets) {
-    preset.presets.forEach((p) => combinePlugins(p, stack));
-  }
-
-  let plugins = preset.corePlugins || [];
-
-  if (plugins === 'default') {
-    plugins = defaultPlugins;
-  }
-
-  if (plugins === 'all') {
-    plugins = ['*'];
-  }
-
-  if (plugins === 'none') {
-    plugins = [];
-  }
-
-  stack.unshift(plugins);
-
-  return [...new Set(stack.flat())].sort();
-}
-
-function combinePresets(preset, stack = []) {
-  if (preset.presets) {
-    preset.presets.forEach((p) => combinePresets(p, stack));
-    stack.unshift(preset.presets);
-  }
-
-  return stack.flat().filter(Boolean);
 }
 
 async function ensureFolder(folder) {
@@ -167,44 +50,18 @@ async function ensureFolder(folder) {
 }
 
 export function generateConfig(preset) {
-  const { borderRadius, devices, spacing, variants = null, theme = null } = preset;
+  if (Array.isArray(preset.extends)) {
+    loadChain(preset);
+  }
 
-  const screens = generateScreens(devices);
-  const colors = generateColors(preset);
-  const corePlugins = transformPlugins(combinePlugins(preset));
-  const presets = combinePresets(preset)
-  const _ = (o) => o || {};
-
-  const config = {
-    corePlugins,
-    ...(presets.length ? { presets: presets.map(generateConfig) } : {}),
-    ..._(variants && { variants }),
-    theme: {
-      ..._(screens && { screens }),
-      ..._(colors && { colors }),
-      ..._(borderRadius && { borderRadius }),
-      ..._(spacing && { spacing }),
-
-      extend: {
-        ..._(screens?.extend && { screens: screens.extend }),
-        ..._(colors?.extend && { colors: colors.extend }),
-        ..._(borderRadius?.extend && { borderRadius: borderRadius.extend }),
-        ..._(spacing?.extend && { spacing: spacing.extend }),
-        ..._(theme?.extend),
-      },
-      ..._(theme),
-    },
-  };
-
-  return preset.resolve ? resolveConfig(config) : config;
+  return preset.resolve ? resolveConfig(preset) : preset;
 }
 
-export async function generatePreset(definitions) {
-  const parsed = parseDefinitions(definitions);
-  const tailwindConfig = generateConfig(parsed);
+export async function generatePreset(preset) {
+  const tailwindConfig = generateConfig(preset);
   const json = JSON.stringify(tailwindConfig, null, 2);
-  const input = generateCssTemplate(parsed.components);
-  const plugins = [tailwind(tailwindConfig), autoprefixer(), definitions.minify && cssnano()].filter(Boolean);
+  const input = generateCssTemplate(preset);
+  const plugins = [tailwind(tailwindConfig), autoprefixer(), preset.minify && cssnano()].filter(Boolean);
   const processor = postcss(...plugins);
 
   try {
@@ -215,15 +72,6 @@ export async function generatePreset(definitions) {
   } catch (error) {
     return { error, css: '', json };
   }
-}
-
-/**
- * @param {String} name
- * @returns {Promise<object|null>} preset
- */
-export async function loadPreset(name) {
-  const input = await readPreset(name);
-  return (input && Yaml.parse(input)) || null;
 }
 
 export async function readPreset(name) {
@@ -237,19 +85,40 @@ export async function readPreset(name) {
 }
 
 /**
+ * @param {String} name
+ * @returns {Promise<object|null>} preset
+ */
+export async function loadPreset(name) {
+  const input = await readPreset(name);
+  return (input && Yaml.parse(input)) || null;
+}
+
+/**
  * @param {object} preset
  * @returns {Promise<object>} preset chain
  */
-export async function loadChain(preset) {
-  if (!preset.extend) {
+export async function loadChain(nameOrPreset) {
+  let preset = nameOrPreset;
+
+  if (typeof nameOrPreset === 'string') {
+    preset = await loadPreset(name);
+  }
+
+  if (!preset?.extends) {
     return preset;
   }
 
-  const next = await loadPreset(preset.extend);
-  preset.presets = [next, ...(preset.presets || [])].filter(Boolean);
+  const presets = preset.presets || [];
 
-  if (next?.extend) {
-    await loadChain(next);
+  for (const extension of preset.extends.reverse()) {
+    const next = await loadPreset(extension);
+
+    if (next?.extends) {
+      await loadChain(next);
+      presets.unshift(...next.presets);
+    }
+
+    presets.unshift(next);
   }
 
   return preset;

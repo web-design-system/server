@@ -68,7 +68,7 @@
 
         const compile = async () => {
           const output = document.getElementById('console');
-          output.innerText = '';
+          output.innerText = 'Generating assets...';
 
           const req = await fetch('/compile/' + name, {
             method: 'POST',

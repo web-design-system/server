@@ -128,8 +128,10 @@ export async function loadChain(nameOrPreset) {
     preset.presets = presets;
   }
 
-  if (preset.corePlugins) {
-    preset.corePlugins = transformPlugins(preset.corePlugins);
+  const plugins = combinePlugins(preset)
+
+  if (plugins.length) {
+    preset.corePlugins = transformPlugins(plugins);
   }
 
   return preset;
@@ -185,4 +187,16 @@ export function transformPlugins(plugins) {
   });
 
   return [...new Set(all)].sort();
+}
+
+function combinePlugins(preset, stack = []) {
+  if (preset.presets) {
+    stack.unshift(...preset.presets.map(p => combinePlugins(p, stack)));
+  }
+
+  if (preset.corePlugins) {
+    stack.unshift(plugins);
+  }
+
+  return [...new Set(stack.flat())].sort();
 }

@@ -178,5 +178,5 @@ function readStream(input) {
 }
 
 createServer(onRequest).listen(Number(process.env.PORT), () => {
-  console.log('Started on 127.0.0.1:' + process.env.PORT);
+  console.log(`[${new Date().toISOString()}] Started on 127.0.0.1:${process.env.PORT}`);
 });

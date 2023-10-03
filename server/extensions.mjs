@@ -34,29 +34,6 @@ function generateColors({ colors }) {
   };
 }
 
-function combinePlugins(preset, stack = []) {
-  if (preset.presets) {
-    preset.presets.forEach((p) => combinePlugins(p, stack));
-  }
-
-  let plugins = preset.corePlugins || [];
-
-  if (plugins === 'default') {
-    plugins = defaultPlugins;
-  }
-
-  if (plugins === 'all') {
-    plugins = ['*'];
-  }
-
-  if (plugins === 'none') {
-    plugins = [];
-  }
-
-  stack.unshift(plugins);
-
-  return [...new Set(stack.flat())].sort();
-}
 
 function combinePresets(preset, stack = []) {
   if (preset.presets) {

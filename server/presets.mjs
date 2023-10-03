@@ -107,8 +107,9 @@ export async function loadChain(nameOrPreset) {
   }
 
   const presets = preset.presets || [];
+  const extensions = typeof preset.extends === 'string' ? [preset.extends] : preset.extends;
 
-  for (const extension of preset.extends.reverse()) {
+  for (const extension of extensions.reverse()) {
     const next = await loadPreset(extension);
 
     if (next?.extends) {

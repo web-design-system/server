@@ -26,11 +26,13 @@ function defineComponent(name, def) {
 }
 
 function generateCssTemplate(preset) {
-  const componentDefinitions = !preset.components
-    ? ''
-    : Object.entries(preset.components)
-        .map(([name, def]) => defineComponent(name, def))
-        .join('');
+  const componentChain = {};
+  [...preset.presets?.map(p => p.components), preset.components].filter(Boolean).forEach(c => {
+    Object.assign(componentChain, c);
+  })
+
+  const entries = Object.entries(componentChain);
+  const componentDefinitions = entries.map(([name, def]) => defineComponent(name, def)).join('');
 
   const css = `@tailwind base;
 @tailwind components;

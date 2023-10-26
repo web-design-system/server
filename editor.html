@@ -82,7 +82,8 @@
 
         const togglePlayground = () => {
           playgroundArea.classList.toggle('hidden');
-          contentArea.classList.toggle('grid-cols-2', playgroundArea.classList.has('hidden'));
+          const hidden = playgroundArea.classList.contains('hidden');
+          contentArea.classList[hidden ? 'remove' : 'add']('grid-cols-2');
         };
 
         const save = () =>

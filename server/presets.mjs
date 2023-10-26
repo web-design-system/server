@@ -50,8 +50,8 @@ async function ensureFolder(folder) {
   return existsSync(folder) || (await mkdir(folder, { recursive: true }));
 }
 
-export async function generateConfig(preset) {
-  await loadChain(preset);
+export async function generateConfig(origin) {
+  const preset = await loadChain(origin);
   return preset.resolve ? resolveConfig(preset) : preset;
 }
 
@@ -110,8 +110,8 @@ export async function loadChain(nameOrPreset) {
       const next = await loadPreset(extension);
 
       if (next?.extends) {
-        await loadChain(next);
-        presets.unshift(...next.presets);
+        const chain = await loadChain(next);
+        presets.unshift(...chain.presets);
       }
 
       presets.unshift(next);
@@ -128,6 +128,8 @@ export async function loadChain(nameOrPreset) {
   if (resolvedPlugins.length) {
     preset.corePlugins = resolvedPlugins;
   }
+
+  console.log(preset, pluginChain);
 
   return preset;
 }

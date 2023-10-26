@@ -128,8 +128,7 @@ async function onGenerate(input, response) {
       input = Yaml.parse(input);
     }
 
-    const chain = await loadChain(input);
-    const output = await generatePreset(chain);
+    const output = await generatePreset(input);
 
     if (output.error) {
       response.writeHead(400);

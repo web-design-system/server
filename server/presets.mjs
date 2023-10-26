@@ -132,7 +132,7 @@ export async function loadChain(nameOrPreset) {
     }
   }
 
-  const pluginChain = combinePlugins(preset).map(transformPlugins);
+  const pluginChain = combinePlugins(preset);
   const resolvedPlugins = [...new Set(pluginChain)];
 
   if (resolvedPlugins.length) {
@@ -166,6 +166,9 @@ export function loadPresetAsset(name) {
   return null;
 }
 
+/**
+ * @returns {string[]} plugins after transforming the keywords
+ */
 export function transformPlugins(plugins) {
   if (plugins === 'all') {
     return allPlugins;
@@ -193,8 +196,11 @@ export function transformPlugins(plugins) {
   });
 }
 
+/**
+ * @returns {string[]} all plugins
+ */
 function combinePlugins(preset, stack = []) {
-  if (preset.presets) {
+  if (Array.isArray(preset.presets)) {
     stack.unshift(...preset.presets.map(p => combinePlugins(p, stack)));
   }
 
@@ -202,5 +208,5 @@ function combinePlugins(preset, stack = []) {
     stack.unshift(preset.corePlugins);
   }
 
-  return [...new Set(stack.flat(2))].sort().filter(Boolean);
+  return stack.flat(2).map(transformPlugins).flat();
 }

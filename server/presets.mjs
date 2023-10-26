@@ -64,12 +64,12 @@ export async function generatePreset(input) {
   const chain = await loadChain(input);
   const tailwindConfig = input.resolve ? resolveConfig(chain) : chain;
   const json = JSON.stringify(tailwindConfig, null, 2);
-  const input = generateCssTemplate(chain);
+  const cssTemplate = generateCssTemplate(chain);
   const plugins = [tailwind(tailwindConfig), autoprefixer(), input.minify && cssnano()].filter(Boolean);
   const processor = postcss(...plugins);
 
   try {
-    const output = await processor.process(input, { from: '/web-design-system.css', to: '/index.css' });
+    const output = await processor.process(cssTemplate, { from: '/web-design-system.css', to: '/index.css' });
     const { css } = output;
 
     return { error: null, css, json };

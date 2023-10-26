@@ -141,6 +141,7 @@ export async function savePreset(name, preset) {
 export async function savePresetAssets(name, preset) {
   const { json, css } = preset;
   const basePath = join(CWD, 'presets', name);
+  await ensureFolder(dirname(basePath));
   await writeFile(basePath + '.mjs', 'export default ' + json);
   await writeFile(basePath + '.css', css);
 }

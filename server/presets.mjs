@@ -129,8 +129,6 @@ export async function loadChain(nameOrPreset) {
     preset.corePlugins = resolvedPlugins;
   }
 
-  console.log(preset, pluginChain);
-
   return preset;
 }
 

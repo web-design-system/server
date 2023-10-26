@@ -4,7 +4,6 @@ import {
   generatePreset,
   loadPreset,
   savePreset,
-  loadChain,
   readPreset,
   savePresetAssets,
   loadPresetAsset,
@@ -12,6 +11,7 @@ import {
 import Yaml from 'yaml';
 
 const toJSON = (o) => JSON.stringify(o, null, 2);
+const log = (...args) => console.log(`[${new Date().toISOString()}]`, ...args);
 
 async function onRequest(request, response) {
   const url = new URL(request.url, 'http://localhost');
@@ -62,7 +62,7 @@ async function onSave(path, input, response) {
     savePreset(path, input);
     response.end();
   } catch (error) {
-    console.log('Failed to update' + path, error);
+    log('Failed to update' + path, error);
     response.writeHead(400);
     response.end(toJSON({ error: String(error) }));
   }
@@ -98,12 +98,12 @@ async function onCompile(path, response) {
   }
 
   const start = Date.now();
-  console.log('Generating ' + path);
+  log('Generating ' + path);
   const output = await generatePreset(preset);
 
   if (output.error) {
     const { error } = output;
-    console.log(error);
+    log(error);
     response.writeHead(500);
     response.end(
       toJSON({
@@ -116,7 +116,7 @@ async function onCompile(path, response) {
   }
 
   await savePresetAssets(path, output);
-  console.log('Finished in ' + (Date.now() - start) + 'ms');
+  log('Finished in ' + (Date.now() - start) + 'ms');
   response.end(toJSON({ json: output.json }));
 }
 
@@ -143,7 +143,7 @@ async function onGenerate(input, response) {
 
     response.end(JSON.stringify(output, null, 2));
   } catch (error) {
-    console.log(error);
+    log(error);
     response.writeHead(400);
     response.end(toJSON({ error: String(error) }));
   }
@@ -170,5 +170,5 @@ function readStream(input) {
 }
 
 createServer(onRequest).listen(Number(process.env.PORT), () => {
-  console.log(`[${new Date().toISOString()}] Started on 127.0.0.1:${process.env.PORT}`);
+  log(`Started on 127.0.0.1:${process.env.PORT}`);
 });

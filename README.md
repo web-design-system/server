@@ -1,4 +1,10 @@
-# Design System as a Service
+# Design Systems as a Service
+
+## Introduction
+
+This service provides a way to create TailwindCSS configurations to generate design systems.
+
+Additionally, it's possible to create component definitions reusing the same CSS classes created by Tailwind definitions.
 
 ## API
 

@@ -72,6 +72,7 @@ async function onReadAsset(path, response) {
   const asset = loadPresetAsset(path);
 
   if (asset) {
+    response.setHeader('cache-control', 'no-cache');
     asset.pipe(response);
     return;
   }

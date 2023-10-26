@@ -13,6 +13,11 @@
       .editor__console {
         min-height: calc(100vh - 90%);
       }
+
+      #playground iframe {
+        width: 100%;
+        height: 100%;
+      }
     </style>
   </head>
   <body class="wds-page">
@@ -20,8 +25,12 @@
       <div class="wds-editor__toolbar">
         <button class="wds-btn wds-btn__primary" data-action="save">Save</button>
         <button class="wds-btn wds-btn__secondary" data-action="compile">Compile</button>
+        <button class="wds-btn wds-btn__secondary" data-action="togglePlayground"></button>
       </div>
-      <div class="wds-editor__content" id="editor"></div>
+      <div class="wds-editor__content">
+        <div id="editor" class="w-1/2"></div>
+        <div id="playground" class="w-1/2 hidden"></div>
+      </div>
       <div class="wds-editor__console" id="console"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs/loader.js"></script>
@@ -43,13 +52,19 @@
           automaticLayout: true,
         });
 
-        window.onEditorLoad(editor);
+        const playground = monaco.editor.create(document.getElementById('playground'), {
+          value: '',
+          language: 'html',
+          automaticLayout: true,
+        });
+
+        window.onEditorLoad(editor, playground);
       });
     </script>
     <script type="module">
       import { encode } from 'https://yaml.jsfn.run/index.mjs';
 
-      const name = location.pathname.replace('/edit/', '');
+      const presetName = location.pathname.replace('/edit/', '');
       function debounce(fn, wait) {
         let timeout;
 
@@ -59,18 +74,24 @@
         };
       }
 
-      window.onEditorLoad = (editor) => {
+      window.onEditorLoad = (editor, playground) => {
+        const output = document.getElementById('console');
+        const playgroundArea = document.getElementById('playground');
+
+        const togglePlayground = () => {
+          playgroundArea.classList.toggle('hidden');
+        };
+
         const save = () =>
-          fetch('/preset/' + name, {
+          fetch('/preset/' + presetName, {
             method: 'POST',
             body: editor.getValue(),
           });
 
         const compile = async () => {
-          const output = document.getElementById('console');
           output.innerText = 'Generating assets...';
 
-          const req = await fetch('/compile/' + name, {
+          const req = await fetch('/compile/' + presetName, {
             method: 'POST',
           });
 
@@ -80,6 +101,7 @@
         const actions = {
           save,
           compile,
+          togglePlayground,
         };
 
         document.querySelectorAll('[data-action]').forEach((c) => {
@@ -94,8 +116,23 @@
           }
         });
 
+        const preview = () => {
+          const html = playground.getValue().trim();
+
+          if (!html) return;
+
+          output.innerHTML = '';
+          const frame = document.createElement('iframe');
+          output.appendChild(frame);
+          const fbody = frame.contentDocument.body;
+          fbody.innerHTML = `<link rel="stylesheet" href="/assets/${presetName}.css" />` + html;
+        };
+
         const debouncedSave = debounce(save, 2000);
-        editor.onDidChangeModelContent(() => debouncedSave());
+        const debouncedPreview = debounce(preview, 2000);
+
+        editor.onDidChangeModelContent(debouncedSave);
+        playground.onDidChangeModelContent(debouncedPreview);
       };
     </script>
   </body>

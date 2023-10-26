@@ -57,6 +57,7 @@ export async function generateConfig(preset) {
 
 export async function generatePreset(preset) {
   const tailwindConfig = await generateConfig(preset);
+  console.log(tailwindConfig.corePlugins);
   const json = JSON.stringify(tailwindConfig, null, 2);
   const input = generateCssTemplate(preset);
   const plugins = [tailwind(tailwindConfig), autoprefixer(), preset.minify && cssnano()].filter(Boolean);
@@ -128,10 +129,10 @@ export async function loadChain(nameOrPreset) {
     preset.presets = presets.filter(Boolean);
   }
 
-  const plugins = combinePlugins(preset)
+  const plugins = transformPlugins(combinePlugins(preset))
 
   if (plugins.length) {
-    preset.corePlugins = transformPlugins(plugins);
+    preset.corePlugins = plugins;
   }
 
   return preset;

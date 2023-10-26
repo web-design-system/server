@@ -102,30 +102,24 @@ export async function loadChain(nameOrPreset) {
     preset = await loadPreset(nameOrPreset);
   }
 
-  if (!preset?.extends) {
-    return preset;
-  }
+  if (preset?.extends) {
+    const presets = preset.presets || [];
+    const extensions = typeof preset.extends === 'string' ? [preset.extends] : preset.extends || [];
 
-  const presets = preset.presets || [];
-  const extensions = typeof preset.extends === 'string' ? [preset.extends] : preset.extends || [];
+    for (const extension of extensions.reverse()) {
+      const next = await loadPreset(extension);
 
-  for (const extension of extensions.reverse()) {
-    const next = await loadPreset(extension);
+      if (next?.extends) {
+        await loadChain(next);
+        presets.unshift(...next.presets);
+      }
 
-    if (next?.extends) {
-      await loadChain(next);
-      presets.unshift(...next.presets);
+      presets.unshift(next);
     }
 
-    // if (next?.corePlugins) {
-    //   next.corePlugins = transformPlugins(next.corePlugins);
-    // }
-
-    presets.unshift(next);
-  }
-
-  if (presets.length) {
-    preset.presets = presets.filter(Boolean);
+    if (presets.length) {
+      preset.presets = presets.filter(Boolean);
+    }
   }
 
   const pluginChain = combinePlugins(preset);
@@ -134,8 +128,6 @@ export async function loadChain(nameOrPreset) {
   if (resolvedPlugins.length) {
     preset.corePlugins = resolvedPlugins;
   }
-
-  console.log(pluginChain, resolvedPlugins);
 
   return preset;
 }

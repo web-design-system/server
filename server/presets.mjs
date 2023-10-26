@@ -107,7 +107,7 @@ export async function loadChain(nameOrPreset) {
   }
 
   const presets = preset.presets || [];
-  const extensions = typeof preset.extends === 'string' ? [preset.extends] : preset.extends;
+  const extensions = typeof preset.extends === 'string' ? [preset.extends] : preset.extends || [];
 
   for (const extension of extensions.reverse()) {
     const next = await loadPreset(extension);
@@ -125,7 +125,7 @@ export async function loadChain(nameOrPreset) {
   }
 
   if (presets.length) {
-    preset.presets = presets;
+    preset.presets = presets.filter(Boolean);
   }
 
   const plugins = combinePlugins(preset)

@@ -50,13 +50,13 @@ async function ensureFolder(folder) {
   return existsSync(folder) || (await mkdir(folder, { recursive: true }));
 }
 
-export function generateConfig(preset) {
-  loadChain(preset);
+export async function generateConfig(preset) {
+  await loadChain(preset);
   return preset.resolve ? resolveConfig(preset) : preset;
 }
 
 export async function generatePreset(preset) {
-  const tailwindConfig = generateConfig(preset);
+  const tailwindConfig = await generateConfig(preset);
   const json = JSON.stringify(tailwindConfig, null, 2);
   const input = generateCssTemplate(preset);
   const plugins = [tailwind(tailwindConfig), autoprefixer(), preset.minify && cssnano()].filter(Boolean);

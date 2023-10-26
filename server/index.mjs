@@ -99,8 +99,7 @@ async function onCompile(path, response) {
 
   const start = Date.now();
   console.log('Generating ' + path);
-  const presetChain = await loadChain(preset);
-  const output = await generatePreset(presetChain);
+  const output = await generatePreset(preset);
 
   if (output.error) {
     const { error } = output;

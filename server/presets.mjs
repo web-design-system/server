@@ -57,7 +57,6 @@ export async function generateConfig(preset) {
 
 export async function generatePreset(preset) {
   const tailwindConfig = await generateConfig(preset);
-  console.log(tailwindConfig.corePlugins);
   const json = JSON.stringify(tailwindConfig, null, 2);
   const input = generateCssTemplate(preset);
   const plugins = [tailwind(tailwindConfig), autoprefixer(), preset.minify && cssnano()].filter(Boolean);
@@ -118,9 +117,9 @@ export async function loadChain(nameOrPreset) {
       presets.unshift(...next.presets);
     }
 
-    if (next?.corePlugins) {
-      next.corePlugins = transformPlugins(next.corePlugins);
-    }
+    // if (next?.corePlugins) {
+    //   next.corePlugins = transformPlugins(next.corePlugins);
+    // }
 
     presets.unshift(next);
   }
@@ -129,11 +128,14 @@ export async function loadChain(nameOrPreset) {
     preset.presets = presets.filter(Boolean);
   }
 
-  const plugins = transformPlugins(combinePlugins(preset))
+  const pluginChain = combinePlugins(preset);
+  const resolvedPlugins = transformPlugins(pluginChain)
 
-  if (plugins.length) {
-    preset.corePlugins = plugins;
+  if (resolvedPlugins.length) {
+    preset.corePlugins = resolvedPlugins;
   }
+
+  console.log(pluginChain, resolvedPlugins);
 
   return preset;
 }
@@ -199,5 +201,5 @@ function combinePlugins(preset, stack = []) {
     stack.unshift(preset.corePlugins);
   }
 
-  return [...new Set(stack.flat(2))].sort();
+  return [...new Set(stack.flat(2))].sort().filter(Boolean);
 }

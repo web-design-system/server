@@ -14,7 +14,7 @@
         min-height: calc(100vh - 90%);
       }
 
-      #playground iframe {
+      iframe {
         width: 100%;
         height: 100%;
       }
@@ -27,9 +27,9 @@
         <button class="wds-btn wds-btn__secondary" data-action="compile">Compile</button>
         <button class="wds-btn wds-btn__secondary" data-action="togglePlayground">Playground</button>
       </div>
-      <div class="wds-editor__content">
-        <div id="editor" class="flex-grow"></div>
-        <div id="playground" class="w-1/2 hidden"></div>
+      <div class="wds-editor__content" id="content">
+        <div id="editor" class="wds-editor__editor"></div>
+        <div id="playground" class="wds-editor__playground hidden"></div>
       </div>
       <div class="wds-editor__console" id="console"></div>
     </div>
@@ -77,9 +77,11 @@
       window.onEditorLoad = (editor, playground) => {
         const output = document.getElementById('console');
         const playgroundArea = document.getElementById('playground');
+        const contentArea = document.getElementById('content');
 
         const togglePlayground = () => {
           playgroundArea.classList.toggle('hidden');
+          contentArea.classList.toggle('grid-cols-2', playgroundArea.classList.has('hidden'));
         };
 
         const save = () =>
@@ -129,7 +131,7 @@
         };
 
         const debouncedSave = debounce(save, 2000);
-        const debouncedPreview = debounce(preview, 2000);
+        const debouncedPreview = debounce(preview, 500);
 
         editor.onDidChangeModelContent(debouncedSave);
         playground.onDidChangeModelContent(debouncedPreview);

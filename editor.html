@@ -117,7 +117,7 @@
           fbody.innerHTML = `<link rel="stylesheet" href="/assets/${presetName}.css" />` + html;
         };
 
-        const debouncedSave = debounce(save, 2000);
+        const debouncedSave = debounce(save, 900);
         const debouncedPreview = debounce(preview, 500);
 
         editor.onDidChangeModelContent(debouncedSave);

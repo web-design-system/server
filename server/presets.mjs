@@ -43,7 +43,7 @@ function generateCssTemplate(presets) {
 ${components}
 }
 
-${preset.styles || ''}
+${presets[0].styles || ''}
 `;
 
   return css;

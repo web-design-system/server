@@ -26,9 +26,14 @@ function defineComponent(name, def) {
 }
 
 function generateCssTemplate(presets) {
+  const styles = [];
   const chain = presets.reduce((chain, next) => {
     if (next.components && typeof next.components === 'object') {
       Object.assign(chain, next.components);
+    }
+
+    if (next.styles) {
+      styles.push(next.styles);
     }
 
     return chain;
@@ -43,7 +48,7 @@ function generateCssTemplate(presets) {
 ${components}
 }
 
-${presets[0].styles || ''}
+${styles.join('')}
 `;
 
   return css;

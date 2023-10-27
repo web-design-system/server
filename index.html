@@ -22,7 +22,7 @@
         }
 
         if (node.dataset.srcelement) {
-          source = document.querySelector(node.dataset.srcelement)?.innerHTML.trim().replace(/[<]/g, '&lt;') || '';
+          source = document.querySelector(node.dataset.srcelement)?.innerHTML.trim() || '';
         }
 
         node.innerHTML = await highlight(source, { language, embed: true });

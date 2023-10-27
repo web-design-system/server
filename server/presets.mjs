@@ -12,13 +12,18 @@ import { defaultPlugins, allPlugins } from './constants.mjs';
 const CWD = process.cwd();
 const getPresetPath = (name) => join(CWD, 'systems', name + '.yml');
 
+function generateComponentParts(name, def, separator) {
+  return !def ? [] : Object.entries(def).map(([part, classes]) => `.${name}${separator}${part} {\n  @apply ${classes} ;\n}\n`);
+}
 function defineComponent(name, def) {
   return [
     def.variants ? '@variants ' + def.variants + ' {\n' : '',
+
     `.${name} {\n${(def.apply && '  @apply ' + def.apply + ';\n') || ''}}\n`,
-    (def.parts &&
-      Object.entries(def.parts).map(([part, classes]) => `.${name}__${part} {\n  @apply ${classes} ;\n}\n`)) ||
-      [],
+
+    generateComponentParts(name, def.parts, '__'),
+    generateComponentParts(name, def.modifiers, '--'),
+
     def.variants ? '}' : '',
   ]
     .flat()

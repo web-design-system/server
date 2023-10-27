@@ -25,29 +25,22 @@ function defineComponent(name, def) {
     .join('');
 }
 
-function generateCssTemplate(preset) {
-  const componentChain = {};
-  const components = [];
+function generateCssTemplate(presets) {
+  const chain = presets.reduce((chain, next) => {
+    if (next.components && typeof next.components === 'object') {
+      Object.assign(chain, next.components);
+    }
 
-  if (Array.isArray(preset.presets)) {
-    components.push(...preset.presets.map(p => p.components))
-  }
+    return chain;
+  }, {});
 
-  if (preset.components) {
-    components.push(preset.components);
-  }
-
-  components.filter(Boolean).forEach(c => Object.assign(componentChain, c))
-
-  const entries = Object.entries(componentChain);
-  const componentDefinitions = entries.map(([name, def]) => defineComponent(name, def)).join('');
-
+  const components = Object.entries(chain).map(([name, def]) => defineComponent(name, def)).join('');
   const css = `@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer components {
-${componentDefinitions}
+${components}
 }
 
 ${preset.styles || ''}
@@ -67,7 +60,7 @@ export async function generatePreset(input) {
     input.presets = presetChain;
   }
 
-  const pluginChain = presetChain.flatMap(p => transformPlugins(p.corePlugins)).filter(Boolean);
+  const pluginChain = [input, ...presetChain].flatMap(p => transformPlugins(p.corePlugins)).filter(Boolean);
   const resolvedPlugins = [...new Set(pluginChain)];
 
   if (resolvedPlugins.length) {
@@ -76,7 +69,7 @@ export async function generatePreset(input) {
 
   const tailwindConfig = input.resolve ? resolveConfig(input) : input;
   const json = JSON.stringify(tailwindConfig, null, 2);
-  const cssTemplate = generateCssTemplate(input);
+  const cssTemplate = generateCssTemplate([input, ...presetChain]);
   const plugins = [tailwind(tailwindConfig), autoprefixer(), input.minify && cssnano()].filter(Boolean);
   const processor = postcss(...plugins);
 

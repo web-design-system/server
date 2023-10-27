@@ -35,9 +35,8 @@
         buttons.forEach((btn) => {
           btn.addEventListener('click', () => {
             const target = btn.dataset.target;
-            contents.forEach((tab) => {
-              tab.classList[tab.dataset.tab === target ? 'remove' : 'add']('hidden');
-            });
+            buttons.forEach(b => b.classList[b === btn ? 'add' : 'remove']('wds-tabs__button--selected'));
+            contents.forEach(t => t.classList[t.dataset.tab === target ? 'remove' : 'add']('hidden'));
           });
         });
       }

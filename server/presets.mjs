@@ -60,7 +60,8 @@ export async function generatePreset(input) {
     input.presets = presetChain;
   }
 
-  const pluginChain = [input, ...presetChain].flatMap(p => transformPlugins(p.corePlugins)).filter(Boolean);
+  const allPresets = [...presetChain, input];
+  const pluginChain = allPresets.flatMap(p => transformPlugins(p.corePlugins)).filter(Boolean);
   const resolvedPlugins = [...new Set(pluginChain)];
 
   if (resolvedPlugins.length) {
@@ -69,7 +70,7 @@ export async function generatePreset(input) {
 
   const tailwindConfig = input.resolve ? resolveConfig(input) : input;
   const json = JSON.stringify(tailwindConfig, null, 2);
-  const cssTemplate = generateCssTemplate([input, ...presetChain]);
+  const cssTemplate = generateCssTemplate(allPresets);
   const plugins = [tailwind(tailwindConfig), autoprefixer(), input.minify && cssnano()].filter(Boolean);
   const processor = postcss(...plugins);
 

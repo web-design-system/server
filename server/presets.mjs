@@ -61,10 +61,22 @@ async function ensureFolder(folder) {
 }
 
 export async function generatePreset(input) {
-  const chain = await loadChain(input);
-  const tailwindConfig = input.resolve ? resolveConfig(chain) : chain;
+  const presetChain = await loadPresetChain(input);
+
+  if (presetChain.length) {
+    input.presets = presetChain;
+  }
+
+  const pluginChain = presetChain.flatMap(p => transformPlugins(p.corePlugins)).filter(Boolean);
+  const resolvedPlugins = [...new Set(pluginChain)];
+
+  if (resolvedPlugins.length) {
+    input.corePlugins = resolvedPlugins;
+  }
+
+  const tailwindConfig = input.resolve ? resolveConfig(input) : input;
   const json = JSON.stringify(tailwindConfig, null, 2);
-  const cssTemplate = generateCssTemplate(chain);
+  const cssTemplate = generateCssTemplate(input);
   const plugins = [tailwind(tailwindConfig), autoprefixer(), input.minify && cssnano()].filter(Boolean);
   const processor = postcss(...plugins);
 
@@ -101,7 +113,7 @@ export async function loadPreset(name) {
  * @param {object} preset
  * @returns {Promise<object>} preset chain
  */
-export async function loadChain(nameOrPreset) {
+export async function loadPresetChain(nameOrPreset, presets = []) {
   let preset = nameOrPreset;
 
   if (typeof nameOrPreset === 'string') {
@@ -113,33 +125,19 @@ export async function loadChain(nameOrPreset) {
   }
 
   if (preset.extends) {
-    const presets = preset.presets || [];
     const extensions = typeof preset.extends === 'string' ? [preset.extends] : preset.extends || [];
 
     for (const extension of extensions.reverse()) {
       const next = await loadPreset(extension);
+      presets.unshift(next);
 
       if (next?.extends) {
-        const chain = await loadChain(next);
-        presets.unshift(...chain.presets);
+        await loadPresetChain(next, presets);
       }
-
-      presets.unshift(next);
-    }
-
-    if (presets.length) {
-      preset.presets = presets.filter(Boolean);
     }
   }
 
-  const pluginChain = combinePlugins(preset);
-  const resolvedPlugins = [...new Set(pluginChain)];
-
-  if (resolvedPlugins.length) {
-    preset.corePlugins = resolvedPlugins;
-  }
-
-  return preset;
+  return presets.filter(Boolean);
 }
 
 export async function savePreset(name, preset) {
@@ -194,19 +192,4 @@ export function transformPlugins(plugins) {
 
     return next;
   });
-}
-
-/**
- * @returns {string[]} all plugins
- */
-function combinePlugins(preset, stack = []) {
-  if (Array.isArray(preset.presets)) {
-    stack.unshift(...preset.presets.map(p => combinePlugins(p, stack)));
-  }
-
-  if (preset.corePlugins) {
-    stack.unshift(preset.corePlugins);
-  }
-
-  return stack.flat(2).map(transformPlugins).flat();
 }

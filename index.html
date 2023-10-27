@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="https://wdn.homebots.io/wds.css" rel="stylesheet" />
+    <link href="https://wdn.homebots.io/wds/site.css" rel="stylesheet" />
     <title>Web Design System</title>
     <script type="module">
       import { highlight } from 'https://highlight.jsfn.run/index.js';
@@ -15,9 +15,15 @@
 
       async function hjs(node) {
         const language = node.getAttribute('lang') || 'text';
-        const source = node.dataset.src
-          ? await fetch(node.dataset.src, { mode: 'cors' }).then((x) => x.text())
-          : node.textContent.trim();
+        let source = node.textContent.trim();
+
+        if (node.dataset.src) {
+          source = await fetch(node.dataset.src, { mode: 'cors' }).then((x) => x.text());
+        }
+
+        if (node.dataset.srcelement) {
+          source = document.querySelector(node.dataset.srcelement)?.innerHTML.trim().replace(/[<]/g, '&lt;') || '';
+        }
 
         node.innerHTML = await highlight(source, { language, embed: true });
       }
@@ -38,13 +44,12 @@
     </script>
   </head>
   <body>
-    <section class="wds-section wds-section-dark">
-      <div class="container mx-auto h-screen">
-        <div class="wds-card">
-          <h2 class="wds-card__title">Web Design System</h2>
-          <p class="wds-card__body">A styleguide and design system generator</p>
-        </div>
-
+    <header class="page-section page-section--dark wds-page-header">
+      <h2 class="wds-page-header__title">Web Design System</h2>
+      <p class="wds-page-header__body">A styleguide and design system generator</p>
+    </header>
+    <section class="page-section">
+      <div class="wds-page-container">
         <div class="wds-tabs" data-tabs="">
           <nav class="wds-tabs__nav">
             <button class="wds-tabs__button" data-target="preset">Preset</button>
@@ -52,50 +57,22 @@
           </nav>
           <div class="wds-tabs__content">
             <div class="wds-tabs__item" data-tab="preset">
-              <div class="wds-codeblock" lang="yaml" data-src="https://wds.homebots.io/preset/wds">
-                <pre>...</pre>
+              <div class="wds-codeblock" lang="yaml" data-src="https://wds.homebots.io/preset/wds/site">
+                <pre class="animate-pulse">...</pre>
               </div>
             </div>
             <div class="wds-tabs__item hidden" data-tab="html">
-              <div class="codeblock" lang="html">
-                <pre>
-&lt;div class="card">
-  &lt;h2 class="card__title">Web Design System.&lt;/h2>
-  &lt;p class="card__body">A styleguide and design system generator&lt;/p>
-&lt;/div>
-  </pre
-                >
+              <div class="wds-codeblock" lang="html" data-srcelement="body">
+                <pre class="animate-pulse">...</pre>
               </div>
             </div>
           </div>
         </div>
       </div>
     </section>
-    <!-- <section class="py-12 bg-white">
-      <div class="container mx-auto h-screen">
-        <h2 class="text-3xl font-bold mb-6">Built on top of of TailwindCSS</h2>
-        <p class="text-lg mb-12">
-          Reuse the Tailwind styles with a minimal setup for your team or project.
-        </p>
-      </div>
-    </section>
-    <section class="py-12 bg-gray-100">
-      <div class="container mx-auto h-screen">
-        <h2 class="text-3xl font-bold mb-6">Getting Started</h2>
-        <p class="text-lg mb-12">
-        </p>
-      </div>
-    </section>
-    <section class="py-12 bg-white">
-      <div class="container mx-auto h-screen">
-        <h2 class="text-3xl font-bold mb-6">Examples</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-        </div>
-      </div>
-    </section> -->
-    <footer class="bg-gray text-white p-lg">
-      <div class="container mx-auto text-center">
-        <p class="text-lg">
+    <footer class="page-section page-section--dark wds-page-footer">
+      <div class="wds-page-container">
+        <p>
           Designed with ♥ by <a href="https://github.com/darlanalves">Darlan Alves</a>. Licensed under the MIT License.
         </p>
       </div>

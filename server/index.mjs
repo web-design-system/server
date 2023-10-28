@@ -14,6 +14,8 @@ const toJSON = (o) => JSON.stringify(o, null, 2);
 const log = (...args) => console.log(`[${new Date().toISOString()}]`, ...args);
 
 async function onRequest(request, response) {
+  response.on('finish', () => log(request.method, request.url, response.statusCode));
+
   const url = new URL(request.url, 'http://localhost');
   const parts = url.pathname.slice(1).split('/');
   const [part, ...segments] = parts;

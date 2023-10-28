@@ -15,6 +15,7 @@ const getPresetPath = (name) => join(CWD, 'systems', name + '.yml');
 function generateComponentParts(name, def, separator) {
   return !def ? [] : Object.entries(def).map(([part, classes]) => `.${name}${separator}${part} {\n  @apply ${classes} ;\n}\n`);
 }
+
 function defineComponent(name, def) {
   return [
     def.variants ? '@variants ' + def.variants + ' {\n' : '',

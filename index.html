@@ -22,7 +22,8 @@
         }
 
         if (node.dataset.srcelement) {
-          source = document.querySelector(node.dataset.srcelement)?.innerHTML.trim() || '';
+          const el = document.querySelector(node.dataset.srcelement);
+          source = (el.content || el)?.children.map(c => c.outerHTML).join('\n') || '';
         }
 
         node.innerHTML = await highlight(source, { language, embed: true });
@@ -45,8 +46,15 @@
   <body>
     <header class="wds-page-section wds-page-section--dark wds-page-header">
       <h2 class="wds-page-header__title">Web Design System</h2>
-      <p class="wds-page-header__body">A styleguide and design system generator</p>
+      <p class="wds-page-header__body">A styleguide and design system generator based on TailwindCSS</p>
     </header>
+    <section class="wds-page-section">
+      <div class="wds-page-container">
+        <h2 class="wds-page-header__title">Declare components</h2>
+
+        <p class="wds-page-header__body">A styleguide and design system generator</p>
+      </div>
+    </section>
     <section class="wds-page-section">
       <div class="wds-page-container">
         <div class="wds-tabs" data-tabs="">

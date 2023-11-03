@@ -18,14 +18,10 @@ function generateComponentParts(name, def, separator) {
 
 function defineComponent(name, def) {
   return [
-    def.variants ? '@variants ' + def.variants + ' {\n' : '',
-
     `.${name} {\n${(def.apply && '  @apply ' + def.apply + ';\n') || ''}}\n`,
-
     generateComponentParts(name, def.parts, '__'),
     generateComponentParts(name, def.modifiers, '--'),
-
-    def.variants ? '}' : '',
+    generateComponentParts(name, def.variants, '-'),
   ]
     .flat()
     .join('');

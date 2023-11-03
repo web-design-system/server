@@ -198,3 +198,13 @@ export const allPlugins = [
   "wordBreak",
   "zIndex",
 ];
+
+export const defaultScreens = {
+  portrait: { raw: "(orientation: portrait)" },
+  landscape: { raw: "(orientation: landscape)" },
+};
+
+export const defaultColors = {
+  transparent: 'transparent',
+  current: 'currentColor',
+}

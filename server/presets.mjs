@@ -2,10 +2,10 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { createReadStream, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import tailwind from 'tailwindcss';
+import resolveConfig from 'tailwindcss/resolveConfig.js';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
 import cssnano from 'cssnano';
-import resolveConfig from 'tailwindcss/resolveConfig.js';
 import Yaml from 'yaml';
 import { defaultPlugins, allPlugins } from './constants.mjs';
 
@@ -29,6 +29,7 @@ function defineComponent(name, def) {
 
 function generateCssTemplate(presets) {
   const styles = [];
+  const variables = {};
   const chain = presets.reduce((chain, next) => {
     if (next.components && typeof next.components === 'object') {
       Object.assign(chain, next.components);
@@ -38,11 +39,19 @@ function generateCssTemplate(presets) {
       styles.push(next.styles);
     }
 
+    if (next.variables) {
+      Object.assign(variables, next.variables);
+    }
+
     return chain;
   }, {});
 
   const components = Object.entries(chain).map(([name, def]) => defineComponent(name, def)).join('');
-  const css = `@tailwind base;
+  const allVariables = Object.entries(variables).map(([key, value]) => `--${key}: ${value};`).join('\n');
+  const css = `:root{
+  ${allVariables}
+}
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 

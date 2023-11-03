@@ -1,70 +1,40 @@
-name: default
+name: minimal
+description: A minimal setup
 
-colors: |
-  white:              #fff
-  black:              #000
-  gray:               #333
-  primary:            #0d6efd
-  primary-light:      #3585fd
-  secondary:          #6c757d
-  danger:             #ee4444
-  warning:            #fbbf24
-  info:               #60a5fa
-  success:            #10b981
+theme:
+  colors:
+    white:              '#fff'
+    black:              '#000'
+    gray:               '#333'
+    primary:            '#0d6efd'
+    primary-light:      '#3585fd'
+    secondary:          '#6c757d'
+    danger:             '#ee4444'
+    warning:            '#fbbf24'
+    info:               '#60a5fa'
+    success:            '#10b981'
+
+  screens:
+    phone: 640px
+    tablet: 768px
+    laptop: 1024px
+    desktop: 1280px
 
 components:
   btn-primary:
-    apply: >-
-      relative py-2 px-4 bg-primary text-white font-semibold rounded-lg
-      shadow-md hover:bg-primary-light focus:outline-none focus:ring-2
-      focus:ring-primary focus:ring-opacity-75 flex
+    apply: >
+      relative py-2 px-4 font-semibold rounded-lg shadow-md hover:bg-primary-light focus:outline-none
+      focus:ring-2 focus:ring-primary focus:ring-opacity-75 flex
     variants:
-      - responsive
-      - hover
+      primary: bg-primary text-white
+      secondary: bg-secondary font-bold
+      sm: text-base py-2 px-2
+      lg: text-2xl py-4 px-6
     parts:
       icon: w-16 h-16 p-1
       label: px-2
       badge: absolute top-0 right-0 rounded-full bg-danger w-8 h-8 -m-4
 
-devices:
-  phone: 640px
-  tablet: 768px
-  laptop: 1024px
-  desktop: 1280px
-
-plugins:
-  - preflight
-  - container
-  - preflight
-  - margin
-  - padding
-  - width
-  - height
-  - backgroundColor
-  - borderColor
-  - boxShadow
-
-radius: |
-  none:     0
-  sm:       0.125rem
-  DEFAULT:  0.25rem
-  md:       0.375rem
-  lg:       0.5rem
-  full:     9999px
-
-shades: |
-  darkest:    -75%
-  dark:       -25%
-  DEFAULT:    100%
-  light:      25%
-  lightest:   75%
-
-sizes: |
-  xs: 25%
-  sm: 50%
-  md: 100%
-  lg: 150%
-  xl: 200%
 
 spacing: |
   0:    0
@@ -77,3 +47,15 @@ spacing: |
   5:    1.25rem
   6:    1.5rem
   lg:   2rem
+
+corePlugins:
+  - preflight
+  - container
+  - preflight
+  - margin
+  - padding
+  - width
+  - height
+  - backgroundColor
+  - borderColor
+  - boxShadow

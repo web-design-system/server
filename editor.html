@@ -20,28 +20,6 @@
       <div class="wds-editor__console" id="console"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs/loader.js"></script>
-
-    <script>
-      require.config({
-        paths: {
-          vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs',
-        },
-      });
-
-      require(['vs/editor/editor.main'], async function () {
-        const name = location.pathname.replace('/edit/', '');
-        const source = await fetch('/preset/' + name);
-
-        const playground = document.getElementById('playground');
-        const editor = monaco.editor.create(document.getElementById('editor'), {
-          value: source.ok ? await source.text() : '',
-          language: 'yaml',
-          automaticLayout: true,
-        });
-
-        window.onEditorLoad(editor, playground);
-      });
-    </script>
     <script type="module">
       import { encode, decode } from 'https://yaml.jsfn.run/index.mjs';
 
@@ -104,7 +82,7 @@
           playground.innerHTML = '';
           togglePlayground(false);
 
-          Object.values(snippets).forEach(([key, value]) => addPreview(key, value));
+          Object.entries(snippets).forEach(([key, value]) => addPreview(key, value));
         }
 
         const actions = {
@@ -128,6 +106,26 @@
         const debouncedSave = debounce(save, 900);
         editor.onDidChangeModelContent(debouncedSave);
       };
+    </script>
+    <script>
+      require.config({
+        paths: {
+          vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs',
+        },
+      });
+
+      require(['vs/editor/editor.main'], async function () {
+        const name = location.pathname.replace('/edit/', '');
+        const source = await fetch('/preset/' + name);
+        const playground = document.getElementById('playground');
+        const editor = monaco.editor.create(document.getElementById('editor'), {
+          value: source.ok ? await source.text() : '',
+          language: 'yaml',
+          automaticLayout: true,
+        });
+
+        window.onEditorLoad(editor, playground);
+      });
     </script>
   </body>
 </html>

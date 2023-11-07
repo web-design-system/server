@@ -19,7 +19,7 @@
       </div>
       <div class="wds-editor__content" id="content">
         <div id="editor" class="wds-editor__editor"></div>
-        <div id="playground" class="wds-editor__playground"></div>
+        <div id="playground" class="wds-editor__playground hidden"></div>
       </div>
       <div class="wds-editor__console" id="console"></div>
     </div>
@@ -59,21 +59,8 @@
             method: "POST",
           });
 
-          output.innerText = await encode(await req.json());
+          output.innerText = 'Done.'
           updatePreview();
-        };
-
-        const addPreview = async (title, html) => {
-          const frame = document.createElement("iframe");
-          const heading = document.createElement("h2");
-          heading.innerText = title;
-          heading.className = "wds-editor__snippet";
-          playground.appendChild(heading);
-          playground.appendChild(frame);
-
-          const fbody = frame.contentDocument.body;
-          fbody.innerHTML =
-            `<link rel="stylesheet" href="/assets/${presetName}.css" />` + html;
         };
 
         const updatePreview = async () => {
@@ -87,9 +74,14 @@
           playground.innerHTML = "";
           togglePlayground(false);
 
-          Object.entries(snippets).forEach(([key, value]) =>
-            addPreview(key, value)
-          );
+          const frame = document.createElement("iframe");
+          const heading = document.createElement("h2");
+          playground.appendChild(frame);
+
+          const fbody = frame.contentDocument.body;
+          fbody.innerHTML =
+            `<link rel="stylesheet" href="/assets/${presetName}.css" />` +
+            Object.entries(snippets).map(([key, value]) => `<div style="font-weight: bold">${key}</div>${value}`).join('');
         };
 
         const actions = {

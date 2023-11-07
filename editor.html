@@ -59,7 +59,8 @@
             method: "POST",
           });
 
-          output.innerText = 'Done.'
+          const res = await req.json();
+          output.innerText = res.error || 'Done.';
           updatePreview();
         };
 

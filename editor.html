@@ -9,9 +9,13 @@
   <body class="wds-page">
     <div class="wds-editor">
       <div class="wds-editor__toolbar">
-        <span class="wds-editor__title">Preset Editor</span>
-        <button class="wds-btn wds-btn__primary" data-action="compile">Compile</button>
-        <button class="wds-btn wds-btn__secondary" data-action="updatePreview">Preview</button>
+        <span class="wds-editor__title">Tailwind Preset</span>
+        <button class="wds-btn wds-btn-primary" data-action="compile">
+          Compile
+        </button>
+        <button class="wds-btn wds-btn-secondary" data-action="updatePreview">
+          Preview
+        </button>
       </div>
       <div class="wds-editor__content" id="content">
         <div id="editor" class="wds-editor__editor"></div>
@@ -21,9 +25,9 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs/loader.js"></script>
     <script type="module">
-      import { encode, decode } from 'https://yaml.jsfn.run/index.mjs';
+      import { encode, decode } from "https://yaml.jsfn.run/index.mjs";
 
-      const presetName = location.pathname.replace('/edit/', '');
+      const presetName = location.pathname.replace("/edit/", "");
       function debounce(fn, wait) {
         let timeout;
 
@@ -34,25 +38,25 @@
       }
 
       window.onEditorLoad = (editor, playground) => {
-        const output = document.getElementById('console');
-        const contentArea = document.getElementById('content');
+        const output = document.getElementById("console");
+        const contentArea = document.getElementById("content");
 
         const togglePlayground = (hidden) => {
-          playground.classList[hidden ? 'add' : 'remove']('hidden');
-          contentArea.classList[hidden ? 'remove' : 'add']('grid-cols-2');
+          playground.classList[hidden ? "add" : "remove"]("hidden");
+          contentArea.classList[hidden ? "remove" : "add"]("grid-cols-2");
         };
 
         const save = () =>
-          fetch('/preset/' + presetName, {
-            method: 'POST',
+          fetch("/preset/" + presetName, {
+            method: "POST",
             body: editor.getValue(),
           });
 
         const compile = async () => {
-          output.innerText = 'Generating assets...';
+          output.innerText = "Generating assets...";
 
-          const req = await fetch('/compile/' + presetName, {
-            method: 'POST',
+          const req = await fetch("/compile/" + presetName, {
+            method: "POST",
           });
 
           output.innerText = await encode(await req.json());
@@ -60,15 +64,16 @@
         };
 
         const addPreview = async (title, html) => {
-          const frame = document.createElement('iframe');
-          const heading = document.createElement('h2');
+          const frame = document.createElement("iframe");
+          const heading = document.createElement("h2");
           heading.innerText = title;
-          heading.className = 'wds-editor__snippet'
+          heading.className = "wds-editor__snippet";
           playground.appendChild(heading);
           playground.appendChild(frame);
 
           const fbody = frame.contentDocument.body;
-          fbody.innerHTML = `<link rel="stylesheet" href="/assets/${presetName}.css" />` + html;
+          fbody.innerHTML =
+            `<link rel="stylesheet" href="/assets/${presetName}.css" />` + html;
         };
 
         const updatePreview = async () => {
@@ -79,11 +84,13 @@
             return;
           }
 
-          playground.innerHTML = '';
+          playground.innerHTML = "";
           togglePlayground(false);
 
-          Object.entries(snippets).forEach(([key, value]) => addPreview(key, value));
-        }
+          Object.entries(snippets).forEach(([key, value]) =>
+            addPreview(key, value)
+          );
+        };
 
         const actions = {
           save,
@@ -91,11 +98,11 @@
           updatePreview,
         };
 
-        document.querySelectorAll('[data-action]').forEach((c) => {
+        document.querySelectorAll("[data-action]").forEach((c) => {
           const action = c.dataset.action;
 
           if (actions[action]) {
-            c.addEventListener('click', async (event) => {
+            c.addEventListener("click", async (event) => {
               c.disabled = true;
               await actions[action](event);
               c.disabled = false;
@@ -110,21 +117,34 @@
     <script>
       require.config({
         paths: {
-          vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs',
+          vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.30.1/min/vs",
         },
       });
 
-      require(['vs/editor/editor.main'], async function () {
-        const name = location.pathname.replace('/edit/', '');
-        const source = await fetch('/preset/' + name);
-        const playground = document.getElementById('playground');
-        const editor = monaco.editor.create(document.getElementById('editor'), {
-          value: source.ok ? await source.text() : '',
-          language: 'yaml',
+      function waitForEditor(editor, playground) {
+        const fn = () => {
+          if (window.onEditorLoad) {
+            window.onEditorLoad(editor, playground);
+            return;
+          }
+
+          setTimeout(fn, 500);
+        };
+
+        fn();
+      }
+
+      require(["vs/editor/editor.main"], async function () {
+        const name = location.pathname.replace("/edit/", "");
+        const source = await fetch("/preset/" + name);
+        const playground = document.getElementById("playground");
+        const editor = monaco.editor.create(document.getElementById("editor"), {
+          value: source.ok ? await source.text() : "",
+          language: "yaml",
           automaticLayout: true,
         });
 
-        window.onEditorLoad(editor, playground);
+        waitForEditor(editor, playground);
       });
     </script>
   </body>

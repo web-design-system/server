@@ -23,7 +23,7 @@
 
         if (node.dataset.srcelement) {
           const el = document.querySelector(node.dataset.srcelement);
-          source = (el.content || el)?.children.map(c => c.outerHTML).join('\n') || '';
+          source = [...(el.content || el)?.children].map(c => c.outerHTML).join('\n') || '';
         }
 
         node.innerHTML = await highlight(source, { language, embed: true });
@@ -59,7 +59,7 @@
       <div class="wds-page-container">
         <div class="wds-tabs" data-tabs="">
           <nav class="wds-tabs__nav">
-            <button class="wds-tabs__button" data-target="preset">Preset</button>
+            <button class="wds-tabs__button wds-tabs__button--selected" data-target="preset">Preset</button>
             <button class="wds-tabs__button" data-target="html">HTML</button>
           </nav>
           <div class="wds-tabs__content">

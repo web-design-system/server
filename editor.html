@@ -38,7 +38,7 @@
         const contentArea = document.getElementById('content');
 
         const togglePlayground = (hidden) => {
-          playground.classList[hidden ? 'remove' : 'add']('hidden');
+          playground.classList[hidden ? 'add' : 'remove']('hidden');
           contentArea.classList[hidden ? 'remove' : 'add']('grid-cols-2');
         };
 

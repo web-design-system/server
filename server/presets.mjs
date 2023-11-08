@@ -27,6 +27,32 @@ function defineComponent(name, def) {
     .join('');
 }
 
+function generateCssSafelist(presets) {
+  const classes = [];
+
+  presets.forEach(next => {
+    if (!(next.components && typeof next.components === 'object')) return;
+
+    Object.entries(next.components).forEach(([name, def]) => {
+      classes.push(name);
+
+      if (def.parts) {
+        classes.push(...Object.keys(def.parts).map(key => name + '__' + key));
+      }
+
+      if (def.modifiers) {
+        classes.push(...Object.keys(def.modifiers).map(key => name + '--' + key));
+      }
+
+      if (def.variants) {
+        classes.push(...Object.keys(def.variants).map(key => name + '-' + key));
+      }
+    });
+  });
+
+  return classes;
+}
+
 function generateCssTemplate(presets) {
   const styles = [];
   const variables = {};
@@ -85,6 +111,15 @@ export async function generatePreset(input) {
   }
 
   const tailwindConfig = input.resolve ? resolveConfig(input) : input;
+
+  if (input.autoPurge) {
+    tailwindConfig.purge = {
+      enabled: true,
+      content: ['*.xyz'],
+      safelist: generateCssSafelist(allPresets),
+    };
+  }
+
   const json = JSON.stringify(tailwindConfig, null, 2);
   const cssTemplate = generateCssTemplate(allPresets);
   const plugins = [tailwind(tailwindConfig), autoprefixer(), input.minify && cssnano()].filter(Boolean);

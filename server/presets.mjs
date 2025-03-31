@@ -1,22 +1,21 @@
-import { readFile, mkdir, writeFile } from "node:fs/promises";
-import { createReadStream, existsSync } from "node:fs";
-import { join, dirname } from "node:path";
-import tailwind from "tailwindcss";
-import resolveConfig from "tailwindcss/resolveConfig.js";
-import postcss from "postcss";
-import autoprefixer from "autoprefixer";
-import cssnano from "cssnano";
-import Yaml from "yaml";
-import { defaultPlugins, allPlugins } from "./constants.mjs";
+import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { createReadStream, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import tailwind from 'tailwindcss';
+import resolveConfig from 'tailwindcss/resolveConfig.js';
+import postcss from 'postcss';
+import autoprefixer from 'autoprefixer';
+import cssnano from 'cssnano';
+import Yaml from 'yaml';
+import { defaultPlugins, allPlugins } from './constants.mjs';
+import { exec } from '@cloud-cli/exec';
 
 const CWD = process.cwd();
-const getPresetPath = (name) => join(CWD, "systems", name + ".yml");
+const getPresetPath = (name) => join(CWD, 'systems', name + '.yml');
 const each = (v) => (!v ? [] : Object.entries(v));
 
 function expandRules(items) {
-  return items
-    .map((item) => (item ? item[0] + `{ @apply ${item[1]}; }\n` : ""))
-    .filter(Boolean);
+  return items.map((item) => (item ? item[0] + `{ @apply ${item[1]}; }\n` : '')).filter(Boolean);
 }
 
 function generateComponentRoot(name, classes) {
@@ -36,10 +35,7 @@ function generateShadowComponentStates(name, def) {
 }
 
 function generateShadowComponentVariants(name, variants) {
-  return each(variants).map(([variant, c]) => [
-    `${name}.${name}-${variant}::part(component)`,
-    c,
-  ]);
+  return each(variants).map(([variant, c]) => [`${name}.${name}-${variant}::part(component)`, c]);
 }
 
 function generateShadowComponentRoot(name, classes) {
@@ -52,42 +48,38 @@ function defineComponent(name, def, useShadowDom) {
         generateShadowComponentRoot(name, def.apply),
         generateShadowComponentParts(name, def.parts),
         generateShadowComponentStates(name, def.states),
-        generateShadowComponentVariants(name, def.variants, "-"),
+        generateShadowComponentVariants(name, def.variants, '-'),
       ]
     : [
         generateComponentRoot(name, def.apply),
-        generateComponentParts(name, def.parts, "__"),
-        generateComponentParts(name, def.modifiers, "--"),
-        generateComponentParts(name, def.variants, "-"),
-        generateComponentParts(name, def.states, ":"),
+        generateComponentParts(name, def.parts, '__'),
+        generateComponentParts(name, def.modifiers, '--'),
+        generateComponentParts(name, def.variants, '-'),
+        generateComponentParts(name, def.states, ':'),
       ];
 
-  return all.map(expandRules).flat(2).join("");
+  return all.map(expandRules).flat(2).join('');
 }
 
 function generateCssSafelist(presets) {
   const classes = [];
 
   presets.forEach((next) => {
-    if (!(next.components && typeof next.components === "object")) return;
+    if (!(next.components && typeof next.components === 'object')) return;
 
     Object.entries(next.components).forEach(([name, def]) => {
       classes.push(name);
 
       if (def.parts) {
-        classes.push(...Object.keys(def.parts).map((key) => name + "__" + key));
+        classes.push(...Object.keys(def.parts).map((key) => name + '__' + key));
       }
 
       if (def.modifiers) {
-        classes.push(
-          ...Object.keys(def.modifiers).map((key) => name + "--" + key)
-        );
+        classes.push(...Object.keys(def.modifiers).map((key) => name + '--' + key));
       }
 
       if (def.variants) {
-        classes.push(
-          ...Object.keys(def.variants).map((key) => name + "-" + key)
-        );
+        classes.push(...Object.keys(def.variants).map((key) => name + '-' + key));
       }
     });
   });
@@ -107,7 +99,7 @@ function generateCssTemplate(presets, useShadowDom) {
       chain.variables = Object.assign({}, chain.variables, next.variables);
     }
 
-    if (next.components && typeof next.components === "object") {
+    if (next.components && typeof next.components === 'object') {
       Object.assign(chain, next.components);
     }
 
@@ -124,10 +116,10 @@ function generateCssTemplate(presets, useShadowDom) {
 
   const components = Object.entries(chain)
     .map(([name, def]) => defineComponent(name, def, useShadowDom))
-    .join("");
+    .join('');
   const allVariables = Object.entries(variables)
     .map(([key, value]) => `--${key}: ${value};`)
-    .join("\n");
+    .join('\n');
   const css = `:root{
   ${allVariables}
 }
@@ -139,7 +131,7 @@ function generateCssTemplate(presets, useShadowDom) {
 ${components}
 }
 
-${styles.join("")}
+${styles.join('')}
 `;
 
   return css;
@@ -157,9 +149,7 @@ export async function generatePreset(input) {
   }
 
   const allPresets = [...presetChain, input];
-  const pluginChain = allPresets
-    .flatMap((p) => transformPlugins(p.corePlugins))
-    .filter(Boolean);
+  const pluginChain = allPresets.flatMap((p) => transformPlugins(p.corePlugins)).filter(Boolean);
   const resolvedPlugins = [...new Set(pluginChain)];
 
   if (resolvedPlugins.length) {
@@ -171,33 +161,26 @@ export async function generatePreset(input) {
   if (input.autoPurge) {
     tailwindConfig.purge = {
       enabled: true,
-      content: ["*.xyz"],
+      content: ['*.xyz'],
       safelist: generateCssSafelist(allPresets),
     };
   }
 
   const json = JSON.stringify(tailwindConfig, null, 2);
-  const cssTemplate = generateCssTemplate(
-    allPresets,
-    input.shadowDom || input["shadow-dom"]
-  );
-  const plugins = [
-    tailwind(tailwindConfig),
-    autoprefixer(),
-    input.minify && cssnano(),
-  ].filter(Boolean);
+  const cssTemplate = generateCssTemplate(allPresets, input.shadowDom || input['shadow-dom']);
+  const plugins = [tailwind(tailwindConfig), autoprefixer(), input.minify && cssnano()].filter(Boolean);
   const processor = postcss(...plugins);
 
   try {
     const output = await processor.process(cssTemplate, {
-      from: "/web-design-system.css",
-      to: "/index.css",
+      from: '/web-design-system.css',
+      to: '/index.css',
     });
     const { css } = output;
 
     return { error: null, css, json };
   } catch (error) {
-    return { error, css: "", json };
+    return { error, css: '', json };
   }
 }
 
@@ -205,10 +188,10 @@ export async function readPreset(name) {
   const path = getPresetPath(name);
 
   if (!existsSync(path)) {
-    return "";
+    return '';
   }
 
-  return await readFile(path, "utf-8");
+  return await readFile(path, 'utf-8');
 }
 
 /**
@@ -227,7 +210,7 @@ export async function loadPreset(name) {
 export async function loadPresetChain(nameOrPreset, presets = []) {
   let preset = nameOrPreset;
 
-  if (typeof nameOrPreset === "string") {
+  if (typeof nameOrPreset === 'string') {
     preset = await loadPreset(nameOrPreset);
   }
 
@@ -236,10 +219,7 @@ export async function loadPresetChain(nameOrPreset, presets = []) {
   }
 
   if (preset.extends) {
-    const extensions =
-      typeof preset.extends === "string"
-        ? [preset.extends]
-        : preset.extends || [];
+    const extensions = typeof preset.extends === 'string' ? [preset.extends] : preset.extends || [];
 
     for (const extension of extensions.reverse()) {
       const next = await loadPreset(extension);
@@ -257,19 +237,20 @@ export async function loadPresetChain(nameOrPreset, presets = []) {
 export async function savePreset(name, preset) {
   const path = getPresetPath(name);
   await ensureFolder(dirname(path));
-  await writeFile(path, preset, "utf-8");
+  await writeFile(path, preset, 'utf-8');
 }
 
 export async function savePresetAssets(name, preset) {
   const { json, css } = preset;
-  const basePath = join(CWD, "presets", name);
+  const basePath = join(CWD, 'presets', name);
   await ensureFolder(dirname(basePath));
-  await writeFile(basePath + ".mjs", "export default " + json);
-  await writeFile(basePath + ".css", css);
+  await writeFile(basePath + '.mjs', 'export default ' + json);
+  await writeFile(basePath + '.css', css);
+  await exec('npx', ['tailwind-config-viewer', 'export', '-c', basePath + '.mjs', basePath + '/preview']);
 }
 
 export function loadPresetAsset(name) {
-  const path = join(CWD, "presets", name);
+  const path = join(CWD, 'presets', name);
 
   if (existsSync(path)) {
     return createReadStream(path);
@@ -282,15 +263,15 @@ export function loadPresetAsset(name) {
  * @returns {string[]} plugins after transforming the keywords
  */
 export function transformPlugins(plugins) {
-  if (plugins === "all") {
+  if (plugins === 'all') {
     return allPlugins;
   }
 
-  if (plugins === "none") {
+  if (plugins === 'none') {
     return [];
   }
 
-  if (plugins === "default") {
+  if (plugins === 'default') {
     plugins = defaultPlugins;
   }
 
@@ -299,7 +280,7 @@ export function transformPlugins(plugins) {
   }
 
   return plugins.flatMap((next) => {
-    if (next.endsWith("*")) {
+    if (next.endsWith('*')) {
       const stem = next.slice(0, -1);
       return allPlugins.filter((p) => p.startsWith(stem));
     }

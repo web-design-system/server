@@ -87,6 +87,18 @@ function generateCssSafelist(presets) {
   return classes;
 }
 
+function mergePresetVariables(presets) {
+  const variables = {};
+
+  for (const next of presets) {
+    if (next.variables) {
+      Object.assign(variables, next.variables);
+    }
+  }
+
+  return variables;
+}
+
 function generateCssTemplate(presets, useShadowDom) {
   const styles = [];
   const variables = {};
@@ -163,6 +175,15 @@ export async function generatePreset(input) {
       enabled: true,
       content: ['*.xyz'],
       safelist: generateCssSafelist(allPresets),
+    };
+  }
+
+  if (tailwindConfig.variables) {
+    const variables = mergePresetVariables(allPresets);
+    tailwindConfig.configViewer = {
+      themeReplacements: Object.fromEntries(
+        Object.entries(variables).map(([key, value]) => [`var(--${key})`, value]),
+      ),
     };
   }
 
@@ -249,7 +270,6 @@ export async function savePresetAssets(name, preset) {
   await ensureFolder(dirname(basePath));
   await writeFile(mjsFile, 'export default ' + json);
   await writeFile(cssFile, css);
-  await mkdir(basePath, { recursive: true });
   await exec('npx', ['tailwind-config-viewer', 'export', '-c', mjsFile, basePath]);
 }
 

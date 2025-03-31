@@ -243,10 +243,12 @@ export async function savePreset(name, preset) {
 export async function savePresetAssets(name, preset) {
   const { json, css } = preset;
   const basePath = join(CWD, 'presets', name);
+  const mjsFile = basePath + '.mjs';
+  const cssFile = basePath + '.css';
 
   await ensureFolder(dirname(basePath));
-  await writeFile(basePath + '.mjs', 'export default ' + json);
-  await writeFile(basePath + '.css', css);
+  await writeFile(mjsFile, 'export default ' + json);
+  await writeFile(cssFile, css);
   await mkdir(basePath, { recursive: true });
   await exec('npx', ['tailwind-config-viewer', 'export', '-c', mjsFile, basePath]);
 }

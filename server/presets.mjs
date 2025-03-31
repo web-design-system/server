@@ -178,11 +178,12 @@ export async function generatePreset(input) {
     };
   }
 
-  if (tailwindConfig.variables) {
-    const variables = mergePresetVariables(allPresets);
+
+  const variables = Object.entries(mergePresetVariables(allPresets))
+  if (variables.length) {
     tailwindConfig.configViewer = {
       themeReplacements: Object.fromEntries(
-        Object.entries(variables).map(([key, value]) => [`var(--${key})`, value]),
+        variables.map(([key, value]) => [`var(--${key})`, value]),
       ),
     };
   }

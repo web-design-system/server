@@ -243,11 +243,15 @@ export async function savePreset(name, preset) {
 export async function savePresetAssets(name, preset) {
   const { json, css } = preset;
   const basePath = join(CWD, 'presets', name);
+  const mjsFile = basePath + '.mjs';
+  const cssFile = basePath + '.css';
+  const previewFolder = basePath + '/preview';
+
   await ensureFolder(dirname(basePath));
-  await writeFile(basePath + '.mjs', 'export default ' + json);
-  await writeFile(basePath + '.css', css);
-  const preview = await exec('npx', ['tailwind-config-viewer', 'export', '-c', basePath + '.mjs', basePath + '/preview']);
-  console.log(preview.stdout, preview.stderr);
+  await writeFile(mjsFile, 'export default ' + json);
+  await writeFile(cssFile, css);
+  await mkdir(previewFolder, { recursive: true });
+  console.log(await exec('npx', ['tailwind-config-viewer', 'export', '-c', mjsFile, previewFolder]));
 }
 
 export function loadPresetAsset(name) {

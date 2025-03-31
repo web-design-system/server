@@ -181,7 +181,8 @@ export async function generatePreset(input) {
 
   const variables = Object.entries(mergePresetVariables(allPresets))
   if (variables.length) {
-    tailwindConfig.configViewer = {
+    tailwindConfig.theme ||= {};
+    tailwindConfig.theme.configViewer = {
       themeReplacements: Object.fromEntries(
         variables.map(([key, value]) => [`var(--${key})`, value]),
       ),

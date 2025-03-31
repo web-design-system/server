@@ -1,13 +1,6 @@
 import { createServer } from 'node:http';
 import { createReadStream } from 'node:fs';
-import {
-  generatePreset,
-  loadPreset,
-  savePreset,
-  readPreset,
-  savePresetAssets,
-  loadPresetAsset,
-} from './presets.mjs';
+import { generatePreset, loadPreset, savePreset, readPreset, savePresetAssets, loadPresetAsset } from './presets.mjs';
 import Yaml from 'yaml';
 
 const toJSON = (o) => JSON.stringify(o, null, 2);
@@ -24,9 +17,11 @@ async function onRequest(request, response) {
 
   switch (route) {
     case 'GET /':
+      response.setHeader('content-type', 'text/html');
       return createReadStream('./index.html').pipe(response);
 
     case 'GET /edit':
+      response.setHeader('content-type', 'text/html');
       return createReadStream('./editor.html').pipe(response);
 
     case 'GET /assets':
@@ -73,23 +68,33 @@ async function onSave(path, input, response) {
 async function onReadAsset(path, response) {
   const asset = loadPresetAsset(path);
 
-  if (asset) {
-    response.setHeader('cache-control', 'no-cache');
-    asset.pipe(response);
-    return;
+  if (!asset) {
+    return notFound(response);
   }
 
-  notFound(response);
+  const extension = path.split('.').pop();
+  const types = {
+    css: 'text/css',
+    mjs: 'application/javascript',
+    json: 'application/json',
+    html: 'text/html',
+    svg: 'image/svg+xml',
+  };
+  response.setHeader('cache-control', 'no-cache');
+  response.setHeader('content-type', types[extension] || 'text/plain');
+  asset.pipe(response);
 }
 
 async function onReadPreset(path, response) {
   const preset = await readPreset(path);
 
-  if (preset) {
-    return response.end(preset);
+  if (!preset) {
+    return notFound(response);
   }
 
-  notFound(response);
+  response.setHeader('cache-control', 'no-cache');
+  response.setHeader('content-type', 'text/yaml');
+  response.end(preset);
 }
 
 async function onCompile(path, response) {
@@ -102,6 +107,7 @@ async function onCompile(path, response) {
   const start = Date.now();
   log('Generating ' + path);
   const output = await generatePreset(preset);
+  response.setHeader('content-type', 'application/json');
 
   if (output.error) {
     const { error } = output;
@@ -131,7 +137,7 @@ async function onGenerate(input, response) {
     }
 
     const output = await generatePreset(input);
-
+    response.setHeader('content-type', 'application/json');
     if (output.error) {
       response.writeHead(400);
       response.end(
@@ -143,7 +149,7 @@ async function onGenerate(input, response) {
       return;
     }
 
-    response.end(JSON.stringify(output, null, 2));
+    response.end(toJSON(output));
   } catch (error) {
     log(error);
     response.writeHead(400);

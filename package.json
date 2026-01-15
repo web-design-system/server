@@ -23,7 +23,7 @@
     "cssnano": "^6.0.1",
     "postcss": "^8.4.31",
     "tailwind-config-viewer": "^2.0.4",
-    "tailwindcss": "^2.2.19",
+    "tailwindcss": "^4.1.18",
     "yaml": "^2.3.2"
   }
 }
